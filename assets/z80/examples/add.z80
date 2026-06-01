@@ -1,0 +1,12 @@
+; 8-bit addition: 42 + 10 = 52
+
+LD A, 42
+ADD A, 10
+LD B, A
+ADD A, A
+INC B
+HALT
+
+; After execution:
+;   A = 0x68 (decimal 104)
+;   B = 0x35 (decimal 53)

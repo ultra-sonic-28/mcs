@@ -1,0 +1,14 @@
+; 16-bit multiplication: 42 * 10 = 420
+
+LD HL, 0     ; Result
+LD B, 10     ; Counter
+LD DE, 42    ; Value to add
+
+LOOP:
+ADD HL, DE   ; HL = HL + 42
+DJNZ LOOP
+
+HALT
+
+; After execution:
+;   HL = 0x01A4 (decimal 420)

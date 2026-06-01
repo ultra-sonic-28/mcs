@@ -1,0 +1,11 @@
+; Substraction: 42 - 52
+
+LD A, 42
+SUB 52
+
+HALT
+
+; After execution:
+;   A = 0xF6 (decimal 246)
+;   This represents -10 in 8-bit two’s complement form.
+;   The Carry flag is set because a borrow occurred.

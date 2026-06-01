@@ -1,0 +1,88 @@
+# =====================================
+# Go (Golang)
+# =====================================
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+./*.out
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Vendor directory (si non versionné)
+vendor/
+
+# =====================================
+# Build & cache
+# =====================================
+
+# Go build cache
+/go-build/
+/.cache/
+
+# =====================================
+# IDE / Editors
+# =====================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (GoLand, IntelliJ)
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+
+# =====================================
+# OS
+# =====================================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Linux
+*~
+
+# =====================================
+# Logs & temp files
+# =====================================
+
+*.log
+tmp/
+temp/
+.tmp/
+~*
+
+# =====================================
+# Project files and directories
+# for testing, building and tooling
+# =====================================
+
+.asserts/
+coverage.*
+examples/*.bin
+*.bin
+TODO.md
+*.syso
+winres.json
+/release/
+bin/
+.bintools/

@@ -1,0 +1,29 @@
+; Division: 420 / 8
+;
+; Quotient  : A = 0x34 (decimal 52)
+; Remainder = B = 0x04 (decimal 4)
+;
+; Result:
+;   A = 52        (quotient)
+;   B = 4         (remainder)
+
+LD HL, 420        ; Dividend
+LD DE, 8          ; Divisor
+
+LD A, 0           ; Quotient = 0
+
+DIV_LOOP:
+OR A              ; Clear carry
+SBC HL, DE        ; HL = HL - 8
+
+JP C, DIV_DONE    ; If negative, stop
+
+INC A             ; Quotient++
+JP DIV_LOOP
+
+DIV_DONE:
+ADD HL, DE        ; Restore remainder
+
+LD B, L           ; Remainder -> B
+
+HALT
