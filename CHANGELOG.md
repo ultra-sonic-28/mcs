@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New Z80 assembler examples in `assets\z80\examples\`: `fact.z80` (factorial calculation), `fibonacci.z80` (Fibonacci sequence), and `prime_number.z80` (prime number detection).
+
+### Changed
+- Compilation of Z80 example programs is now performed during `mage build` instead of `mage release` to ensure assets are ready for development and testing.
+
+## [0.0.0.14] - 2026-06-02
+
 ### Fixed
 - Corrected `logging_enabled=false` behavior: it now correctly suppresses all terminal output and removes the `mcs.log` file if it exists.
 - Refactored `DAA` (Decimal Adjust Accumulator) instruction with more accurate Half-Carry (H) and undocumented flag logic to pass `zexall` tests.

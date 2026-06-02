@@ -43,6 +43,10 @@ const (
 
 // Configure and build MCS binary to /bin directory
 func Build() error {
+	if err := compileExamples(); err != nil {
+		return err
+	}
+
 	// Incrémenter le numéro de build AVANT toute lecture
 	fmt.Println("Updating build number")
 	versionBytes, err := incrementBuildNumber("VERSION")
@@ -171,10 +175,6 @@ func Build() error {
 func Release() error {
 	fmt.Println("Building release...")
 	mg.Deps(Build)
-
-	if err := compileExamples(); err != nil {
-		return err
-	}
 
 	version, err := os.ReadFile("VERSION")
 	if err != nil {
@@ -502,7 +502,7 @@ func compileExamples() error {
 	examples := ExampleSet{
 		CPU:      "Z80",
 		Compiler: filepath.Join(".bintools", "vasmz80_std.exe"),
-		Sources:  []string{"add", "sub", "div", "multiply"},
+		Sources:  []string{"add", "sub", "div", "multiply", "fact", "fibonacci", "prime_number"},
 	}
 
 	examplesDir := filepath.Join("assets", "z80", "examples")

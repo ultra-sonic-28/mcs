@@ -1,0 +1,26 @@
+; Calculate 7! = 5040
+; Result returned in HL = 0x13B0 (5040 decimal)
+
+LD B, 7          ; Multiplier
+LD HL, 1         ; Result = 1
+
+FACTORIAL_LOOP:
+
+; Save current result
+LD D, H
+LD E, L          ; DE = previous HL value
+
+LD HL, 0         ; New multiplication result = 0
+
+LD A, B
+LD C, A          ; Counter = multiplier
+
+MULT_LOOP:
+ADD HL, DE       ; HL = HL + previous result
+DEC C
+JP NZ, MULT_LOOP
+
+DEC B
+JP NZ, FACTORIAL_LOOP
+
+HALT

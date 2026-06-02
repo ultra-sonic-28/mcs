@@ -1,0 +1,40 @@
+; Calculate the 22nd Fibonacci number
+;
+; Fibonacci sequence:
+; 0, 1, 1, 2, 3, 5, 8, ...
+;
+; Result:
+; HL = 0x452F (17711 decimal)
+
+LD HL, 0          ; Previous value  F(n-2)
+LD DE, 1          ; Current value   F(n-1)
+
+LD B, 21          ; Need 21 iterations to reach F(22)
+
+FIB_LOOP:
+
+PUSH DE           ; Save current Fibonacci value
+
+ADD HL, DE        ; HL = previous + current
+
+POP DE            ; Restore current value
+
+; Swap HL and DE
+; DE = new Fibonacci number
+; HL = old current number
+
+LD A, H
+LD C, L
+
+LD H, D
+LD L, E
+
+LD D, A
+LD E, C
+
+DJNZ FIB_LOOP
+
+; Final result is in DE -> exchange with HL
+EX DE, HL
+
+HALT

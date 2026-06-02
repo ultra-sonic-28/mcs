@@ -1,0 +1,81 @@
+; Find the 57th prime number
+;
+; Result:
+;   HL = 0x010D (269 decimal)
+;   B  = 57
+;
+; Uses:
+;   HL = candidate number
+;   DE = divisor
+;   B  = prime counter
+
+        LD HL,2          ; Current number to test
+        LD B,0           ; Prime counter
+
+NEXT_NUMBER:
+
+        ; Assume number is prime
+        LD DE,2          ; Divisor = 2
+
+TEST_DIVISOR:
+
+        ; --------------------------------------------------
+        ; If DE >= HL then no divisor was found
+        ; => number is prime
+        ; --------------------------------------------------
+
+        LD A,D
+        CP H
+        JP C,DO_MODULO       ; D < H => DE < HL
+
+        JP NZ,PRIME_FOUND    ; D > H => DE > HL
+
+        LD A,E
+        CP L
+        JP C,DO_MODULO       ; E < L => DE < HL
+
+        JP PRIME_FOUND       ; DE >= HL
+
+DO_MODULO:
+
+        ; --------------------------------------------------
+        ; Compute HL mod DE by repeated subtraction
+        ; --------------------------------------------------
+
+        PUSH HL              ; Save candidate
+
+MOD_LOOP:
+        OR A                 ; Clear carry
+        SBC HL,DE
+        JP NC,MOD_LOOP
+
+        ADD HL,DE            ; Restore remainder
+
+        LD A,H
+        OR L
+        JP Z,NOT_PRIME       ; remainder == 0
+
+        POP HL               ; Restore candidate
+
+        INC DE               ; Next divisor
+        JP TEST_DIVISOR
+
+NOT_PRIME:
+        POP HL               ; Restore candidate
+
+        INC HL               ; Next candidate
+        JP NEXT_NUMBER
+
+PRIME_FOUND:
+
+        INC B                ; Prime count++
+
+        LD A,B
+        CP 57
+        JP Z,DONE
+
+        INC HL               ; Next candidate
+        JP NEXT_NUMBER
+
+DONE:
+        HALT
