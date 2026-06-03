@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Spectrum 48K ULA I/O logic: Port 0xFE support for Border color, Beeper, and MIC state.
+- Keyboard matrix scanning (40 keys) in `internal/machine/spectrum/keyboard.go`.
+- Support for Tape/EAR input bit in Port 0xFE.
+- DSL-based unit tests for keyboard scanning and ULA I/O.
 - Spectrum 48K foundation in `internal/machine/spectrum`: `Bus` implementation with 16KB ROM and 48KB RAM support.
 - Embedded Spectrum 48K ROM data in `assets/machines/spectrum/rom.go`.
 - DSL-based unit tests for Spectrum `Bus` memory and I/O logic.

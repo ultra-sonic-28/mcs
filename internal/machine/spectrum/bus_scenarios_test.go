@@ -24,9 +24,12 @@ var busScenarios = []dsl.Scenario{
 		bus.Write(0xFFFF, 0x55)
 		assert.Equal(t, "RAM byte at 0xFFFF", bus.Read(0xFFFF), uint8(0x55))
 	}),
-	dsl.NewScenario("Default IO In returns 0xFF", func(t *testing.T) {
+	dsl.NewScenario("IO In returns 0xBF for even ports and 0xFF for odd ports", func(t *testing.T) {
 		bus := NewBus()
-		assert.Equal(t, "IO In at 0x0000", bus.In(0x0000), uint8(0xFF))
-		assert.Equal(t, "IO In at 0xFFFF", bus.In(0xFFFF), uint8(0xFF))
+		// Even ports (like 0x0000) match Port 0xFE decoding in Spectrum
+		// result (0x1F) | 0xA0 = 0xBF (191)
+		assert.Equal(t, "IO In at 0x0000 (even)", bus.In(0x0000), uint8(0xBF))
+		// Odd ports return 0xFF
+		assert.Equal(t, "IO In at 0xFFFF (odd)", bus.In(0xFFFF), uint8(0xFF))
 	}),
 }
