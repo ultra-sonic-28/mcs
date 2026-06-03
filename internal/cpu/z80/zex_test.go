@@ -46,6 +46,8 @@ func TestZex(t *testing.T) {
 			bus := &ZexBus{}
 			cpu := NewCPU(bus, bus)
 
+			nb_instructions := 0
+
 			// Load program at 0x100 (standard CP/M)
 			for i, b := range data {
 				bus.Write(0x100+uint16(i), b)
@@ -131,6 +133,7 @@ func TestZex(t *testing.T) {
 
 				if cpu.Regs.PC == 0x0000 {
 					fmt.Println("\nProgram exited via JP 0")
+					fmt.Printf("%v instructions executed\n", nb_instructions)
 					fmt.Println("")
 					break
 				}
@@ -186,6 +189,7 @@ func TestZex(t *testing.T) {
 				}
 
 				cpu.Step()
+				nb_instructions++
 
 				//if cpu.Cycles%100000000 == 0 { // Every 100M cycles
 				//	fmt.Printf("(%dM) ", cpu.Cycles/1000000)
