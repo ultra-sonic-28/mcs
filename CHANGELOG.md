@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Integrated Ebitengine (v2) for Spectrum 48K GUI window management and keyboard mapping.
+- New `--machine spectrum` flag in `cmd/mcs/main.go` to boot the ZX Spectrum emulator.
+- New `--tape <file>.tap` flag to automatically load and play cassettes on boot.
 - Spectrum 48K Cassette support: `.tap` file parser and real-time pulse generation for EAR port.
 - Support for Tape Pilot, Sync, and Data pulse timings (T-cycles).
 - Beeper state tracking in Port 0xFE Out.

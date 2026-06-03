@@ -4,7 +4,7 @@ package spectrum
 import (
 	"log/slog"
 	"mcs/internal/cpu/z80"
-	"time"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const (
@@ -20,9 +20,6 @@ const (
 type Machine struct {
 	CPU *z80.CPU
 	Bus *Bus
-
-	// Timing
-	frameStartTime time.Time
 }
 
 // NewMachine creates and initializes a new Spectrum 48K machine.
@@ -57,25 +54,19 @@ func (m *Machine) RunFrame() {
 		// Update Tape Signal
 		m.Bus.TapeInState = m.Bus.Tape.Step(uint32(cycles))
 	}
+
+	// Toggle Flash every 16 frames (approx 0.32s)
+	if m.CPU.Cycles % (69888 * 16) < 69888 {
+		m.Bus.Display.FlashState = !m.Bus.Display.FlashState
+	}
 }
 
-// Run executes the machine at the correct speed.
+// Run executes the machine using Ebitengine.
 // This is a blocking call.
-func (m *Machine) Run() {
-	slog.Info("Starting Spectrum 48K execution loop")
-	ticker := time.NewTicker(time.Second / FramesPerSecond)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-		m.RunFrame()
-		
-		// Render the frame (to be connected to a GUI later)
-		m.Bus.Display.RenderFrame(m.Bus.GetDisplayMemory())
-		
-		// Toggle Flash every 16 frames (approx 0.32s)
-		if m.CPU.Cycles % (69888 * 16) < 69888 {
-			m.Bus.Display.FlashState = !m.Bus.Display.FlashState
-		}
-	}
+func (m *Machine) Run() error {
+	slog.Info("Starting Spectrum 48K Ebitengine loop")
+	ebiten.SetWindowSize(ScreenWidth*2, ScreenHeight*2)
+	ebiten.SetWindowTitle("MCS - ZX Spectrum 48K")
+	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
+	return ebiten.RunGame(m)
 }
