@@ -28,7 +28,7 @@ type ZexTraceEntry struct {
 // TestZex runs the Z80 Instruction Set Exerciser binaries (ZEXALL/ZEXDOC).
 // These binaries must be present in the project root or a specified directory.
 func TestZex(t *testing.T) {
-	tests := []string{"zexdoc.com", "zexall.com"}
+	tests := []string{"prelim.com", "zexdoc.com", "zexall.com"}
 	const historySize = 50
 
 	for _, filename := range tests {
@@ -131,6 +131,7 @@ func TestZex(t *testing.T) {
 
 				if cpu.Regs.PC == 0x0000 {
 					fmt.Println("\nProgram exited via JP 0")
+					fmt.Println("")
 					break
 				}
 

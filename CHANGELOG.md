@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - New Z80 assembler examples in `assets\z80\examples\`: `fact.z80` (factorial calculation), `fibonacci.z80` (Fibonacci sequence), and `prime_number.z80` (prime number detection).
+- Support for Z80 'Preliminary tests' which are executed before `zexdoc` and `zexall` to verify core instruction logic.
 
 ### Changed
 - Compilation of Z80 example programs is now performed during `mage build` instead of `mage release` to ensure assets are ready for development and testing.
