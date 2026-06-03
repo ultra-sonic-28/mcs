@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Spectrum 48K Video Engine: non-linear display memory mapping (256x192).
+- Spectrum attribute system support: Ink, Paper, Bright, and Flash attributes.
+- Spectrum 16-color palette implementation in `internal/machine/spectrum/display.go`.
+- DSL-based unit tests for non-linear memory rendering and attribute logic.
 - Spectrum 48K ULA I/O logic: Port 0xFE support for Border color, Beeper, and MIC state.
 - Keyboard matrix scanning (40 keys) in `internal/machine/spectrum/keyboard.go`.
 - Support for Tape/EAR input bit in Port 0xFE.

@@ -19,6 +19,9 @@ type Bus struct {
 	BeeperState bool
 	MicState    bool
 	TapeInState bool
+
+	// Display
+	Display *Display
 }
 
 // NewBus creates a new Spectrum Bus with the embedded 48K ROM loaded.
@@ -26,6 +29,7 @@ func NewBus() *Bus {
 	slog.Info("Initializing Spectrum 48K Bus")
 	b := &Bus{
 		Keyboard: NewKeyboard(),
+		Display:  NewDisplay(),
 	}
 	
 	// Load ROM
@@ -89,4 +93,9 @@ func (b *Bus) Out(port uint16, val uint8) {
 		b.MicState = (val & 0x08) != 0
 		b.BeeperState = (val & 0x10) != 0
 	}
+}
+
+// GetDisplayMemory returns the 6912 bytes of memory used for the display (starting at 0x4000).
+func (b *Bus) GetDisplayMemory() []byte {
+	return b.ram[0:6912]
 }

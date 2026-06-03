@@ -9,4 +9,5 @@ import (
 func TestBus(t *testing.T) {
 	dsl.RunScenarios(t, busScenarios)
 	dsl.RunScenarios(t, keyboardScenarios)
+	dsl.RunScenarios(t, displayScenarios)
 }
