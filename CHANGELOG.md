@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Spectrum 48K foundation in `internal/machine/spectrum`: `Bus` implementation with 16KB ROM and 48KB RAM support.
+- Embedded Spectrum 48K ROM data in `assets/machines/spectrum/rom.go`.
+- DSL-based unit tests for Spectrum `Bus` memory and I/O logic.
 - New Z80 assembler examples in `assets\z80\examples\`: `fact.z80` (factorial calculation), `fibonacci.z80` (Fibonacci sequence), and `prime_number.z80` (prime number detection).
 - Support for Z80 'Preliminary tests' which are executed before `zexdoc` and `zexall` to verify core instruction logic.
 - Instruction counting for Z80 exercisers, providing total execution counts after each test completion.
