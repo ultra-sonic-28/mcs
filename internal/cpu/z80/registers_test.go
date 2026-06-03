@@ -43,6 +43,9 @@ func TestZ80(t *testing.T) {
 		dslScenarios = append(dslScenarios, dsl.NewScenario(s.Name, s.Run))
 	}
 
+	// Add Interrupt scenarios
+	dslScenarios = append(dslScenarios, interruptScenarios...)
+
 	// Add Instruction scenarios
 	for _, s := range instructionScenarios {
 		dslScenarios = append(dslScenarios, dsl.NewScenario(s.Name, s.Run))

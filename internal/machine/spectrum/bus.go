@@ -22,6 +22,9 @@ type Bus struct {
 
 	// Display
 	Display *Display
+
+	// Tape
+	Tape *Tape
 }
 
 // NewBus creates a new Spectrum Bus with the embedded 48K ROM loaded.
@@ -30,6 +33,7 @@ func NewBus() *Bus {
 	b := &Bus{
 		Keyboard: NewKeyboard(),
 		Display:  NewDisplay(),
+		Tape:     NewTape(),
 	}
 	
 	// Load ROM

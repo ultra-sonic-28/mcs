@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Spectrum 48K Cassette support: `.tap` file parser and real-time pulse generation for EAR port.
+- Support for Tape Pilot, Sync, and Data pulse timings (T-cycles).
+- Beeper state tracking in Port 0xFE Out.
+- DSL-based unit tests for `.tap` block parsing and pulse timing.
+- Z80 CPU: Support for maskable (INT) and non-maskable (NMI) interrupts.
+- Z80 CPU: Implementation of interrupt modes IM0, IM1, and IM2.
+- Spectrum 48K Machine implementation with 50Hz frame loop and 3.5MHz timing logic.
+- Automated 50Hz interrupt triggering at the start of each frame.
+- DSL-based unit tests for Z80 interrupts and Spectrum frame timing.
 - Spectrum 48K Video Engine: non-linear display memory mapping (256x192).
 - Spectrum attribute system support: Ink, Paper, Bright, and Flash attributes.
 - Spectrum 16-color palette implementation in `internal/machine/spectrum/display.go`.

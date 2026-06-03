@@ -87,9 +87,79 @@ func (c *CPU) SetHalt(halted bool) {
 	c.Halted = halted
 }
 
+// HandleInterrupts checks for pending interrupts and processes them if possible.
+// It returns the number of T-cycles consumed.
+func (c *CPU) HandleInterrupts() int {
+	// 1. Non-Maskable Interrupt (NMI) - Highest priority, edge-triggered
+	if c.NMI {
+		c.NMI = false
+		c.Halted = false
+		c.IFF2 = c.IFF1
+		c.IFF1 = false
+		c.push(c.Regs.PC)
+		c.Regs.PC = 0x0066
+		c.AddCycles(11)
+		return 11
+	}
+
+	// 2. Maskable Interrupt (INT) - Level-triggered, checked if IFF1 is set
+	if c.INT && c.IFF1 {
+		c.INT = false // Clear pending state (usually handled by hardware ack)
+		c.Halted = false
+		c.IFF1 = false
+		c.IFF2 = false
+
+		cycles := 0
+		switch c.IM {
+		case IM0:
+			// Mode 0: Default to RST 38h (0xFF) for simplicity if no data on bus
+			// In a real system, the device provides the instruction.
+			c.push(c.Regs.PC)
+			c.Regs.PC = 0x0038
+			cycles = 13
+		case IM1:
+			// Mode 1: Always RST 38h
+			c.push(c.Regs.PC)
+			c.Regs.PC = 0x0038
+			cycles = 13
+		case IM2:
+			// Mode 2: Indirect call via vector table
+			// For Spectrum, the bus usually returns 0xFF.
+			vectorAddr := (uint16(c.Regs.I) << 8) | 0xFF
+			target := uint16(c.Memory.Read(vectorAddr)) | (uint16(c.Memory.Read(vectorAddr+1)) << 8)
+			c.push(c.Regs.PC)
+			c.Regs.PC = target
+			cycles = 19
+		}
+		c.AddCycles(uint64(cycles))
+		return cycles
+	}
+
+	return 0
+}
+
+func (c *CPU) push(val uint16) {
+	c.Regs.SP--
+	c.Memory.Write(c.Regs.SP, uint8(val>>8))
+	c.Regs.SP--
+	c.Memory.Write(c.Regs.SP, uint8(val&0xFF))
+}
+
+func (c *CPU) pop() uint16 {
+	low := uint16(c.Memory.Read(c.Regs.SP))
+	c.Regs.SP++
+	high := uint16(c.Memory.Read(c.Regs.SP))
+	c.Regs.SP++
+	return (high << 8) | low
+}
+
 // Step executes the next instruction pointed by PC.
 // It returns the number of T-cycles consumed.
 func (c *CPU) Step() int {
+	if cycles := c.HandleInterrupts(); cycles > 0 {
+		return cycles
+	}
+
 	if c.Halted {
 		// In halt state, the CPU executes NOP-like cycles until an interrupt occurs.
 		c.AddCycles(4)
