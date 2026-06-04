@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Detailed debug logging for `.tap` file loading, including block types (Program, Code, Data), names, and lengths.
+- Detailed debug logging for `.tap` file loading, including block types, names, lengths, auto-start lines for programs, and loading addresses for code blocks.
 - Integrated Ebitengine (v2) for Spectrum 48K GUI window management and keyboard mapping.
 - New `--machine spectrum` flag in `cmd/mcs/main.go` to boot the ZX Spectrum emulator.
 - New `--tape <file>.tap` flag to automatically load and play cassettes on boot.

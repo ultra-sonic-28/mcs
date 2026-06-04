@@ -2,6 +2,7 @@
 package spectrum
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -74,19 +75,26 @@ func (t *Tape) getBlockDetail(block []byte) string {
 	}
 
 	flag := block[0]
-	if flag == 0x00 && len(block) >= 12 {
-		// Header block
+	if flag == 0x00 && len(block) >= 18 {
+		// Standard Spectrum ROM Header (19 bytes in .tap: 1 flag + 17 header + 1 checksum)
 		typ := block[1]
 		name := strings.TrimRight(string(block[2:12]), " ")
+		size := uint16(block[12]) | uint16(block[13])<<8
+		param1 := uint16(block[14]) | uint16(block[15])<<8
+		
 		switch typ {
 		case 0:
-			return "Program \"" + name + "\""
+			lineInfo := ""
+			if param1 <= 32767 {
+				lineInfo = fmt.Sprintf(" (line %d)", param1)
+			}
+			return fmt.Sprintf("Program \"%s\"%s (size %d)", name, lineInfo, size)
 		case 1:
-			return "Number array \"" + name + "\""
+			return fmt.Sprintf("Number array \"%s\" (size %d)", name, size)
 		case 2:
-			return "Character array \"" + name + "\""
+			return fmt.Sprintf("Character array \"%s\" (size %d)", name, size)
 		case 3:
-			return "Code \"" + name + "\""
+			return fmt.Sprintf("Code \"%s\" (addr %d) (size %d)", name, param1, size)
 		default:
 			return "Unknown header"
 		}
