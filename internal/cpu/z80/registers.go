@@ -175,14 +175,12 @@ func (r *Registers) DEC_DE() {
 
 // ExchangeAF swaps the AF and AF' register pairs.
 func (r *Registers) ExchangeAF() {
-	slog.Debug("exchanging AF and AF'")
 	r.A, r.APrime = r.APrime, r.A
 	r.F, r.FPrime = r.FPrime, r.F
 }
 
 // ExchangeMainSwaps swaps BC, DE, and HL with their alternate counterparts (EXX).
 func (r *Registers) ExchangeMainSwaps() {
-	slog.Debug("exchanging BC, DE, HL with alternates (EXX)")
 	r.B, r.BPrime = r.BPrime, r.B
 	r.C, r.CPrime = r.CPrime, r.C
 	r.D, r.DPrime = r.DPrime, r.D

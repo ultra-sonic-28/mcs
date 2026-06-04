@@ -4,6 +4,7 @@ package spectrum
 import (
 	"log/slog"
 	"mcs/internal/cpu/z80"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -27,7 +28,7 @@ func NewMachine() *Machine {
 	slog.Info("Creating Spectrum 48K Machine")
 	bus := NewBus()
 	cpu := z80.NewCPU(bus, bus)
-	
+
 	return &Machine{
 		CPU: cpu,
 		Bus: bus,
@@ -36,7 +37,7 @@ func NewMachine() *Machine {
 
 // Reset performs a hardware reset of the machine.
 func (m *Machine) Reset() {
-	m.CPU.Reset()
+	//m.CPU.Reset()
 	// Spectrum ROM starts with DI (0xF3), so PC=0 is correct.
 }
 
@@ -50,13 +51,13 @@ func (m *Machine) RunFrame() {
 
 	for (m.CPU.Cycles - startCycles) < targetCycles {
 		cycles := m.CPU.Step()
-		
+
 		// Update Tape Signal
 		m.Bus.TapeInState = m.Bus.Tape.Step(uint32(cycles))
 	}
 
 	// Toggle Flash every 16 frames (approx 0.32s)
-	if m.CPU.Cycles % (69888 * 16) < 69888 {
+	if m.CPU.Cycles%(69888*16) < 69888 {
 		m.Bus.Display.FlashState = !m.Bus.Display.FlashState
 	}
 }

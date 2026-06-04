@@ -96,6 +96,10 @@ func runSpectrum(tapePath string) {
 	m := spectrum.NewMachine()
 	m.Reset()
 
+	// Report loaded instructions
+	z80.LogAllInstructions()
+	slog.Info("CPU initialization complete", "instructions_loaded", z80.CountInstructions())
+
 	if tapePath != "" {
 		if err := m.Bus.Tape.LoadTAP(tapePath); err != nil {
 			slog.Error("⚠️ failed to load tape", "error", err)

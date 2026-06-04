@@ -23,7 +23,7 @@ const (
 // Tape handles the loading and playback of .tap cassette files.
 type Tape struct {
 	Blocks [][]byte
-	
+
 	// Playback state
 	Active        bool
 	CurrentBlock  int
@@ -50,18 +50,22 @@ func (t *Tape) LoadTAP(filename string) error {
 
 	t.Blocks = nil
 	for i := 0; i < len(data); {
-		if i+2 > len(data) { break }
+		if i+2 > len(data) {
+			break
+		}
 		length := uint16(data[i]) | uint16(data[i+1])<<8
 		i += 2
-		if i+int(length) > len(data) { break }
-		
+		if i+int(length) > len(data) {
+			break
+		}
+
 		block := make([]byte, length)
 		copy(block, data[i:i+int(length)])
 		t.Blocks = append(t.Blocks, block)
 		i += int(length)
 	}
 
-	slog.Debug("Loaded .tap file", "file", filename, "blocks_count", len(t.Blocks))
+	slog.Info("Loaded .tap file", "file", filename, "blocks_count", len(t.Blocks))
 	for i, block := range t.Blocks {
 		detail := t.getBlockDetail(block)
 		slog.Debug("Tape block info", "block", i+1, "detail", detail, "length", len(block))
@@ -81,7 +85,7 @@ func (t *Tape) getBlockDetail(block []byte) string {
 		name := strings.TrimRight(string(block[2:12]), " ")
 		size := uint16(block[12]) | uint16(block[13])<<8
 		param1 := uint16(block[14]) | uint16(block[15])<<8
-		
+
 		switch typ {
 		case 0:
 			lineInfo := ""
@@ -107,7 +111,9 @@ func (t *Tape) getBlockDetail(block []byte) string {
 
 // Play starts the tape playback.
 func (t *Tape) Play() {
-	if len(t.Blocks) == 0 { return }
+	if len(t.Blocks) == 0 {
+		return
+	}
 	t.Active = true
 	t.CurrentBlock = 0
 	t.startBlock()
@@ -134,7 +140,9 @@ func (t *Tape) startBlock() {
 // Step advances the tape state by the given number of T-cycles.
 // It returns the current signal state (true = EAR high).
 func (t *Tape) Step(cycles uint32) bool {
-	if !t.Active { return true }
+	if !t.Active {
+		return true
+	}
 
 	t.CyclesInPulse += cycles
 	if t.CyclesInPulse >= t.PulseLength {

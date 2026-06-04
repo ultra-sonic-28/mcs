@@ -1,4 +1,4 @@
 {
   "logging_enabled": true,
-  "log_level": "DEBUG"
+  "log_level": "INFO"
 }
