@@ -2,8 +2,9 @@
 package spectrum
 
 import (
-	"fmt"
+	"log/slog"
 	"os"
+	"strings"
 )
 
 // TapeState represents the current part of the tape block being played.
@@ -59,8 +60,41 @@ func (t *Tape) LoadTAP(filename string) error {
 		i += int(length)
 	}
 
-	fmt.Printf("Loaded .tap file: %d blocks found\n", len(t.Blocks))
+	slog.Debug("Loaded .tap file", "file", filename, "blocks_count", len(t.Blocks))
+	for i, block := range t.Blocks {
+		detail := t.getBlockDetail(block)
+		slog.Debug("Tape block info", "block", i+1, "detail", detail, "length", len(block))
+	}
 	return nil
+}
+
+func (t *Tape) getBlockDetail(block []byte) string {
+	if len(block) < 1 {
+		return "empty"
+	}
+
+	flag := block[0]
+	if flag == 0x00 && len(block) >= 12 {
+		// Header block
+		typ := block[1]
+		name := strings.TrimRight(string(block[2:12]), " ")
+		switch typ {
+		case 0:
+			return "Program \"" + name + "\""
+		case 1:
+			return "Number array \"" + name + "\""
+		case 2:
+			return "Character array \"" + name + "\""
+		case 3:
+			return "Code \"" + name + "\""
+		default:
+			return "Unknown header"
+		}
+	} else if flag == 0xFF {
+		return "data"
+	}
+
+	return "unknown"
 }
 
 // Play starts the tape playback.
