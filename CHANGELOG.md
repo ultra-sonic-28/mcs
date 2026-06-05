@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Auto-Start mechanism for Spectrum 48K: automatically types `LOAD ""` and executes programs when a tape is provided via the `--tape` flag.
+- Refined keyboard macro timing and sequence to ensure reliable `LOAD ""` command entry, including a fix for host keyboard interference during auto-typing.
 - Instant Load (Fast Load) support: traps the ROM's `LD-BYTES` routine (0x0556) to inject tape blocks directly into memory, bypassing the slow audio loading process.
 - Automated keyboard macro system in `Machine.updateAutoStart` to simulate keystrokes for BASIC commands.
 - New `Read16` helper in Spectrum `Bus` for easier 16-bit memory access.

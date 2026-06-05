@@ -97,46 +97,54 @@ func (m *Machine) updateAutoStart() {
 	// Keyboard sequence for LOAD "" <ENTER>
 	// 48K mode keywords: J -> LOAD, Symbol Shift + P -> "
 	switch m.autoStartStep {
-	case 0: // Press J
+	case 0: // Press J (LOAD)
+		slog.Debug("Auto-start: Pressing J")
 		m.Bus.Keyboard.SetKeyState(KeyJ, true)
-		m.autoStartTimer = 5
+		m.autoStartTimer = 15
 		m.autoStartStep++
 	case 1: // Release J
+		slog.Debug("Auto-start: Releasing J")
 		m.Bus.Keyboard.SetKeyState(KeyJ, false)
-		m.autoStartTimer = 5
+		m.autoStartTimer = 15
 		m.autoStartStep++
-	case 2: // Press Symbol Shift + P (")
+	case 2: // Press Symbol Shift
+		slog.Debug("Auto-start: Pressing Symbol Shift")
 		m.Bus.Keyboard.SetKeyState(KeySymbolShift, true)
+		m.autoStartTimer = 15
+		m.autoStartStep++
+	case 3: // Press P (")
+		slog.Debug("Auto-start: Pressing P (first quote)")
 		m.Bus.Keyboard.SetKeyState(KeyP, true)
-		m.autoStartTimer = 5
+		m.autoStartTimer = 15
 		m.autoStartStep++
-	case 3: // Release Symbol Shift + P
-		m.Bus.Keyboard.SetKeyState(KeySymbolShift, false)
+	case 4: // Release P
+		slog.Debug("Auto-start: Releasing P (first quote)")
 		m.Bus.Keyboard.SetKeyState(KeyP, false)
-		m.autoStartTimer = 5
+		m.autoStartTimer = 15
 		m.autoStartStep++
-	case 4: // Press Symbol Shift + P (")
-		m.Bus.Keyboard.SetKeyState(KeySymbolShift, true)
+	case 5: // Press P again (")
+		slog.Debug("Auto-start: Pressing P (second quote)")
 		m.Bus.Keyboard.SetKeyState(KeyP, true)
-		m.autoStartTimer = 5
+		m.autoStartTimer = 15
 		m.autoStartStep++
-	case 5: // Release Symbol Shift + P
-		m.Bus.Keyboard.SetKeyState(KeySymbolShift, false)
+	case 6: // Release P and Symbol Shift
+		slog.Debug("Auto-start: Releasing P and Symbol Shift")
 		m.Bus.Keyboard.SetKeyState(KeyP, false)
-		m.autoStartTimer = 5
+		m.Bus.Keyboard.SetKeyState(KeySymbolShift, false)
+		m.autoStartTimer = 15
 		m.autoStartStep++
-	case 6: // Press Enter
+	case 7: // Press Enter
+		slog.Debug("Auto-start: Pressing Enter")
 		m.Bus.Keyboard.SetKeyState(KeyEnter, true)
-		m.autoStartTimer = 5
+		m.autoStartTimer = 15
 		m.autoStartStep++
-	case 7: // Release Enter
+	case 8: // Release Enter
+		slog.Debug("Auto-start: Releasing Enter")
 		m.Bus.Keyboard.SetKeyState(KeyEnter, false)
-		m.autoStartTimer = 20
+		m.autoStartTimer = 100 // Wait 2s for BASIC to start the loader
 		m.autoStartStep++
-	case 8: // Ready for trap
-		slog.Info("Auto-typing complete, waiting for ROM to start loading")
-		// We don't call m.Bus.Tape.Play() here to avoid advancing the tape via audio cycles.
-		// The trap will handle it.
+	case 9: // Finished typing
+		slog.Info("Auto-typing complete")
 		m.autoStartEnabled = false
 	}
 }
@@ -199,7 +207,10 @@ func (m *Machine) instantLoadBlock() {
 	m.CPU.Regs.SP += 2
 	m.CPU.Regs.PC = retAddr
 
-	slog.Debug("Instant load complete, returning to", "addr", fmt.Sprintf("0x%04X", retAddr))
+	slog.Info("Instant load complete, returning to ROM", 
+		"addr", fmt.Sprintf("0x%04X", retAddr),
+		"next_block", t.CurrentBlock+1,
+		"total_blocks", len(t.Blocks))
 
 	// Advance to next block
 	t.CurrentBlock++
