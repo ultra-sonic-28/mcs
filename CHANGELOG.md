@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Auto-Start mechanism for Spectrum 48K: automatically types `LOAD ""` and executes programs when a tape is provided via the `--tape` flag.
+- Instant Load (Fast Load) support: traps the ROM's `LD-BYTES` routine (0x0556) to inject tape blocks directly into memory, bypassing the slow audio loading process.
+- Automated keyboard macro system in `Machine.updateAutoStart` to simulate keystrokes for BASIC commands.
+- New `Read16` helper in Spectrum `Bus` for easier 16-bit memory access.
 - Detailed debug logging for `.tap` file loading, including block types, names, lengths, auto-start lines for programs, and loading addresses for code blocks.
 - Integrated Ebitengine (v2) for Spectrum 48K GUI window management and keyboard mapping.
 - New `--machine spectrum` flag in `cmd/mcs/main.go` to boot the ZX Spectrum emulator.

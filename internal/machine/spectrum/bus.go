@@ -56,6 +56,11 @@ func (b *Bus) Read(addr uint16) uint8 {
 	return b.ram[addr-16384]
 }
 
+// Read16 returns the 16-bit word at the specified memory address (little-endian).
+func (b *Bus) Read16(addr uint16) uint16 {
+	return uint16(b.Read(addr)) | (uint16(b.Read(addr+1)) << 8)
+}
+
 // Write stores a byte at the specified memory address.
 // ROM is read-only.
 func (b *Bus) Write(addr uint16, val uint8) {

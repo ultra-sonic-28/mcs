@@ -105,7 +105,7 @@ func runSpectrum(tapePath string) {
 			slog.Error("⚠️ failed to load tape", "error", err)
 			os.Exit(1)
 		}
-		m.Bus.Tape.Play()
+		m.EnableAutoStart()
 	}
 
 	if err := m.Run(); err != nil {
