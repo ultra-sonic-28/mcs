@@ -27,6 +27,7 @@ type Machine struct {
 	autoStartEnabled bool
 	autoStartStep    int
 	autoStartTimer   int
+	autoStartTyping  bool
 }
 
 // NewMachine creates and initializes a new Spectrum 48K machine.
@@ -99,44 +100,45 @@ func (m *Machine) updateAutoStart() {
 	switch m.autoStartStep {
 	case 0: // Press J (LOAD)
 		slog.Debug("Auto-start: Pressing J")
+		m.autoStartTyping = true
 		m.Bus.Keyboard.SetKeyState(KeyJ, true)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 1: // Release J
 		slog.Debug("Auto-start: Releasing J")
 		m.Bus.Keyboard.SetKeyState(KeyJ, false)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 2: // Press Symbol Shift
 		slog.Debug("Auto-start: Pressing Symbol Shift")
 		m.Bus.Keyboard.SetKeyState(KeySymbolShift, true)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 5
 		m.autoStartStep++
 	case 3: // Press P (")
 		slog.Debug("Auto-start: Pressing P (first quote)")
 		m.Bus.Keyboard.SetKeyState(KeyP, true)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 4: // Release P
 		slog.Debug("Auto-start: Releasing P (first quote)")
 		m.Bus.Keyboard.SetKeyState(KeyP, false)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 5: // Press P again (")
 		slog.Debug("Auto-start: Pressing P (second quote)")
 		m.Bus.Keyboard.SetKeyState(KeyP, true)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 6: // Release P and Symbol Shift
 		slog.Debug("Auto-start: Releasing P and Symbol Shift")
 		m.Bus.Keyboard.SetKeyState(KeyP, false)
 		m.Bus.Keyboard.SetKeyState(KeySymbolShift, false)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 7: // Press Enter
 		slog.Debug("Auto-start: Pressing Enter")
 		m.Bus.Keyboard.SetKeyState(KeyEnter, true)
-		m.autoStartTimer = 15
+		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 8: // Release Enter
 		slog.Debug("Auto-start: Releasing Enter")
@@ -145,11 +147,22 @@ func (m *Machine) updateAutoStart() {
 		m.autoStartStep++
 	case 9: // Finished typing
 		slog.Info("Auto-typing complete")
+		m.autoStartTyping = false
 		m.autoStartEnabled = false
 	}
 }
 
 func (m *Machine) instantLoadBlock() {
+	// If auto-start is still active, deactivate it because loading has started.
+	if m.autoStartEnabled {
+		slog.Info("Loading started, deactivating auto-typing macro")
+		m.autoStartEnabled = false
+		// Also release any keys that might be stuck
+		for i := 0; i < 40; i++ {
+			m.Bus.Keyboard.SetKeyState(Key(i), false)
+		}
+	}
+
 	t := m.Bus.Tape
 	if t.CurrentBlock >= len(t.Blocks) {
 		return
@@ -204,19 +217,24 @@ func (m *Machine) instantLoadBlock() {
 
 	// Perform a RET (return to caller)
 	retAddr := m.Bus.Read16(m.CPU.Regs.SP)
-	m.CPU.Regs.SP += 2
-	m.CPU.Regs.PC = retAddr
-
 	slog.Info("Instant load complete, returning to ROM", 
 		"addr", fmt.Sprintf("0x%04X", retAddr),
+		"sp", fmt.Sprintf("0x%04X", m.CPU.Regs.SP),
 		"next_block", t.CurrentBlock+1,
 		"total_blocks", len(t.Blocks))
+
+	m.CPU.Regs.SP += 2
+	m.CPU.Regs.PC = retAddr
 
 	// Advance to next block
 	t.CurrentBlock++
 	if t.CurrentBlock >= len(t.Blocks) {
 		t.Active = false
 		slog.Info("Tape loading finished (Instant)")
+		
+		// Some demos might need interrupts enabled to start
+		m.CPU.IFF1 = true
+		m.CPU.IFF2 = true
 	}
 }
 

@@ -54,4 +54,5 @@ go test ./internal/cpu/z80/... -v
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for the full text.
 
 ## Attributions
-<a href="https://www.flaticon.com/free-icons/ram" title="ram icons">Ram icons created by Smashicons - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/ram" title="ram icons">Ram icons created by Smashicons - Flaticon</a>
+- [Tetris - 40th Anniversary Edition](https://spectrumcomputing.co.uk/entry/45451/ZX-Spectrum/Tetris-40th_Anniversary_Edition)

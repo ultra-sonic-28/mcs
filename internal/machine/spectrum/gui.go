@@ -19,7 +19,7 @@ var KeyMap = map[ebiten.Key]Key{
 
 // UpdateKeyboard reads the host keyboard state and updates the Spectrum keyboard.
 func (m *Machine) UpdateKeyboard() {
-	if m.autoStartEnabled {
+	if m.autoStartTyping {
 		// During auto-start typing, we don't want physical keyboard to interfere.
 		return
 	}
