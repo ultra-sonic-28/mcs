@@ -46,7 +46,7 @@ func NewMachine() *Machine {
 func (m *Machine) EnableAutoStart() {
 	m.autoStartEnabled = true
 	m.autoStartStep = 0
-	m.autoStartTimer = 100 // Wait 100 frames (2 seconds) for boot
+	m.autoStartTimer = 150 // Wait 150 frames (3 seconds) for boot
 	slog.Info("Auto-start mechanism enabled")
 }
 
@@ -69,8 +69,12 @@ func (m *Machine) RunFrame() {
 
 	for (m.CPU.Cycles - startCycles) < targetCycles {
 		// Instant Load Trap: Intercept ROM Tape Loading Routine (LD-BYTES at 0x0556)
-		if m.CPU.Regs.PC == 0x0556 && len(m.Bus.Tape.Blocks) > 0 {
-			m.instantLoadBlock()
+		if m.CPU.Regs.PC == 0x0556 {
+			if len(m.Bus.Tape.Blocks) > 0 {
+				m.instantLoadBlock()
+			} else {
+				slog.Debug("LD-BYTES called but no tape blocks loaded")
+			}
 		}
 
 		cycles := m.CPU.Step()
@@ -95,8 +99,8 @@ func (m *Machine) updateAutoStart() {
 		return
 	}
 
-	// Keyboard sequence for LOAD "" <ENTER>
-	// 48K mode keywords: J -> LOAD, Symbol Shift + P -> "
+	// Keyboard sequence for LOAD "" : RUN <ENTER>
+	// 48K mode keywords: J -> LOAD, Symbol Shift + P -> ", Symbol Shift + Z -> :, R -> RUN
 	switch m.autoStartStep {
 	case 0: // Press J (LOAD)
 		slog.Debug("Auto-start: Pressing J")
@@ -120,7 +124,7 @@ func (m *Machine) updateAutoStart() {
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 4: // Release P
-		slog.Debug("Auto-start: Releasing P (first quote)")
+		slog.Debug("Auto-start: Releasing P")
 		m.Bus.Keyboard.SetKeyState(KeyP, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
@@ -129,23 +133,43 @@ func (m *Machine) updateAutoStart() {
 		m.Bus.Keyboard.SetKeyState(KeyP, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
-	case 6: // Release P and Symbol Shift
-		slog.Debug("Auto-start: Releasing P and Symbol Shift")
+	case 6: // Release P
+		slog.Debug("Auto-start: Releasing P")
 		m.Bus.Keyboard.SetKeyState(KeyP, false)
+		m.autoStartTimer = 10
+		m.autoStartStep++
+	case 7: // Press Z (:)
+		slog.Debug("Auto-start: Pressing Z (colon)")
+		m.Bus.Keyboard.SetKeyState(KeyZ, true)
+		m.autoStartTimer = 10
+		m.autoStartStep++
+	case 8: // Release Z and Symbol Shift
+		slog.Debug("Auto-start: Releasing Z and Symbol Shift")
+		m.Bus.Keyboard.SetKeyState(KeyZ, false)
 		m.Bus.Keyboard.SetKeyState(KeySymbolShift, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
-	case 7: // Press Enter
+	case 9: // Press R (RUN)
+		slog.Debug("Auto-start: Pressing R (RUN)")
+		m.Bus.Keyboard.SetKeyState(KeyR, true)
+		m.autoStartTimer = 10
+		m.autoStartStep++
+	case 10: // Release R
+		slog.Debug("Auto-start: Releasing R")
+		m.Bus.Keyboard.SetKeyState(KeyR, false)
+		m.autoStartTimer = 10
+		m.autoStartStep++
+	case 11: // Press Enter
 		slog.Debug("Auto-start: Pressing Enter")
 		m.Bus.Keyboard.SetKeyState(KeyEnter, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
-	case 8: // Release Enter
+	case 12: // Release Enter
 		slog.Debug("Auto-start: Releasing Enter")
 		m.Bus.Keyboard.SetKeyState(KeyEnter, false)
-		m.autoStartTimer = 100 // Wait 2s for BASIC to start the loader
+		m.autoStartTimer = 100 // Wait 2s
 		m.autoStartStep++
-	case 9: // Finished typing
+	case 13: // Finished typing
 		slog.Info("Auto-typing complete")
 		m.autoStartTyping = false
 		m.autoStartEnabled = false
@@ -153,18 +177,9 @@ func (m *Machine) updateAutoStart() {
 }
 
 func (m *Machine) instantLoadBlock() {
-	// If auto-start is still active, deactivate it because loading has started.
-	if m.autoStartEnabled {
-		slog.Info("Loading started, deactivating auto-typing macro")
-		m.autoStartEnabled = false
-		// Also release any keys that might be stuck
-		for i := 0; i < 40; i++ {
-			m.Bus.Keyboard.SetKeyState(Key(i), false)
-		}
-	}
-
 	t := m.Bus.Tape
 	if t.CurrentBlock >= len(t.Blocks) {
+		slog.Debug("LD-BYTES called but all tape blocks already loaded")
 		return
 	}
 
@@ -179,10 +194,8 @@ func (m *Machine) instantLoadBlock() {
 
 	// If the ROM is looking for a header (A=0), but we are at a data block, we skip.
 	// Actually, standard LOAD routine expects blocks in order.
-	// If the flags don't match, it's usually because the ROM is searching for a header
-	// while we are at the data block of a PREVIOUS program, or vice-versa.
 	if block[0] != expectedFlag {
-		slog.Debug("Instant load flag mismatch, skipping block", 
+		slog.Info("Instant load flag mismatch, skipping block", 
 			"block", t.CurrentBlock+1, 
 			"block_flag", fmt.Sprintf("0x%02X", block[0]), 
 			"expected_flag", fmt.Sprintf("0x%02X", expectedFlag))

@@ -8,11 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Auto-Start mechanism for Spectrum 48K: automatically types `LOAD ""` and executes programs when a tape is provided via the `--tape` flag.
-- Refined keyboard macro timing and sequence to ensure reliable `LOAD ""` command entry, including a fix for host keyboard interference during auto-typing.
-- Instant Load (Fast Load) support: traps the ROM's `LD-BYTES` routine (0x0556) to inject tape blocks directly into memory, bypassing the slow audio loading process.
-- Synchronized Auto-Start and Instant Load: the typing macro now automatically deactivates as soon as loading begins to prevent interference with the loaded program.
-- Automatic CPU state restoration after Instant Load: explicitly enables interrupts (IFF1/IFF2) and releases virtual keys to ensure a smooth transition to the loaded program's execution.
+- Auto-Start mechanism for Spectrum 48K: automatically types `LOAD "" : RUN` and executes programs when a tape is provided via the `--tape` flag. The addition of `: RUN` ensures compatibility with tapes that lack an auto-start line in their header.
+- Refined keyboard macro timing and sequence to ensure reliable command entry, including a fix for host keyboard interference during auto-typing.
+- Instant Load (Fast Load) support: traps the ROM's `LD-BYTES` routine (0x0556) to inject tape blocks directly into memory, bypassing the slow audio loading process. Supports multi-block tapes by allowing the trap to trigger multiple times as the loader script progresses.
+- Automatic CPU state restoration after Instant Load: explicitly enables interrupts (IFF1/IFF2) and releases virtual keys after the final block is loaded to ensure a smooth transition to the game's execution.
 - New `Read16` helper in Spectrum `Bus` for easier 16-bit memory access.
 - Detailed debug logging for `.tap` file loading, including block types, names, lengths, auto-start lines for programs, and loading addresses for code blocks.
 - Integrated Ebitengine (v2) for Spectrum 48K GUI window management and keyboard mapping.
