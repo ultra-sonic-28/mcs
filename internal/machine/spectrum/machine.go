@@ -184,7 +184,7 @@ func (m *Machine) instantLoadBlock() {
 	}
 
 	block := t.Blocks[t.CurrentBlock]
-	
+
 	// A = expected flag (0x00 for header, 0xFF for data)
 	// IX = destination address
 	// DE = expected length
@@ -195,15 +195,15 @@ func (m *Machine) instantLoadBlock() {
 	// If the ROM is looking for a header (A=0), but we are at a data block, we skip.
 	// Actually, standard LOAD routine expects blocks in order.
 	if block[0] != expectedFlag {
-		slog.Info("Instant load flag mismatch, skipping block", 
-			"block", t.CurrentBlock+1, 
-			"block_flag", fmt.Sprintf("0x%02X", block[0]), 
+		slog.Warn("Instant load flag mismatch, skipping block",
+			"block", t.CurrentBlock+1,
+			"block_flag", fmt.Sprintf("0x%02X", block[0]),
 			"expected_flag", fmt.Sprintf("0x%02X", expectedFlag))
 		return
 	}
 
-	slog.Info("Instant loading tape block", 
-		"block", t.CurrentBlock+1, 
+	slog.Debug("Instant loading tape block",
+		"block", t.CurrentBlock+1,
 		"type", block[0],
 		"dest", fmt.Sprintf("0x%04X", destAddr),
 		"len", expectedLen)
@@ -222,7 +222,7 @@ func (m *Machine) instantLoadBlock() {
 	// Update Registers as if LD-BYTES finished successfully
 	m.CPU.Regs.IX += dataLen
 	m.CPU.Regs.SetDE(0)
-	m.CPU.Regs.SetBC(0x0001) // Not strictly necessary but common
+	m.CPU.Regs.SetBC(0x0001)           // Not strictly necessary but common
 	m.CPU.Regs.L = block[len(block)-1] // Checksum
 	m.CPU.Regs.H = m.CPU.Regs.L
 	m.CPU.Regs.SetFlag(z80.FlagC, true) // Success
@@ -230,7 +230,7 @@ func (m *Machine) instantLoadBlock() {
 
 	// Perform a RET (return to caller)
 	retAddr := m.Bus.Read16(m.CPU.Regs.SP)
-	slog.Info("Instant load complete, returning to ROM", 
+	slog.Debug("Instant load complete, returning to ROM",
 		"addr", fmt.Sprintf("0x%04X", retAddr),
 		"sp", fmt.Sprintf("0x%04X", m.CPU.Regs.SP),
 		"next_block", t.CurrentBlock+1,
@@ -244,7 +244,7 @@ func (m *Machine) instantLoadBlock() {
 	if t.CurrentBlock >= len(t.Blocks) {
 		t.Active = false
 		slog.Info("Tape loading finished (Instant)")
-		
+
 		// Some demos might need interrupts enabled to start
 		m.CPU.IFF1 = true
 		m.CPU.IFF2 = true

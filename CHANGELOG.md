@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Compilation of Z80 example programs is now performed during `mage build` instead of `mage release` to ensure assets are ready for development and testing.
+- Change logging level for instant loading messages.
 
 ## [0.0.0.14] - 2026-06-02
 
