@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added some demoscene titles
 - Auto-Start mechanism for Spectrum 48K: automatically types `LOAD "" : RUN` and executes programs when a tape is provided via the `--tape` flag. The addition of `: RUN` ensures compatibility with tapes that lack an auto-start line in their header.
 - Refined keyboard macro timing and sequence to ensure reliable command entry, including a fix for host keyboard interference during auto-typing.
 - Instant Load (Fast Load) support: traps the ROM's `LD-BYTES` routine (0x0556) to inject tape blocks directly into memory, bypassing the slow audio loading process. Supports multi-block tapes by allowing the trap to trigger multiple times as the loader script progresses.

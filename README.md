@@ -54,6 +54,15 @@ go test ./internal/cpu/z80/... -v
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for the full text.
 
 ## Attributions
+Icons / Images
 - <a href="https://www.flaticon.com/free-icons/ram" title="ram icons">Ram icons created by Smashicons - Flaticon</a>
+
+Program tapes
 - [Tetris - 40th Anniversary Edition](https://spectrumcomputing.co.uk/entry/45451/ZX-Spectrum/Tetris-40th_Anniversary_Edition)
 - [Addix](https://spectrumcomputing.co.uk/entry/45446/ZX-Spectrum/Addix)
+
+Tapes from the demoscene
+- [Forever 20 Invitation](https://spectrumcomputing.co.uk/entry/34414/ZX-Spectrum/Forever_20_Invitation)
+- [Gemba Demo](https://spectrumcomputing.co.uk/entry/27476/ZX-Spectrum/Gemba_Demo)
+- [Chaos](https://spectrumcomputing.co.uk/entry/34398/ZX-Spectrum/Chaos)
+- [Synergy 2024 Invitation](https://spectrumcomputing.co.uk/entry/43018/ZX-Spectrum/Synergy_2024_Invitation)
