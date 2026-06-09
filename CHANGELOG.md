@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.0.20] - 2026-06-09
+
 ### Added
 - Added some demoscene titles
 - Auto-Start mechanism for Spectrum 48K: automatically types `LOAD "" : RUN` and executes programs when a tape is provided via the `--tape` flag. The addition of `: RUN` ensures compatibility with tapes that lack an auto-start line in their header.

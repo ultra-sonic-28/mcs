@@ -174,7 +174,7 @@ func Build() error {
 // Build release archive for github
 func Release() error {
 	fmt.Println("Building release...")
-	mg.Deps(Build)
+	mg.SerialDeps(Clean, Build)
 
 	version, err := os.ReadFile("VERSION")
 	if err != nil {
