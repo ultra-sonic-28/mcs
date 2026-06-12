@@ -50,6 +50,19 @@ Or using the standard Go test runner:
 go test ./internal/cpu/z80/... -v
 ```
 
+## Emulated CPUs and machines
+
+| CPU | Machine       | Emulated |
+| --- | ------------- | :------: |
+| Z80 |               | X        |
+|     | Spectrum 48K  | X        |
+|     | Spectrum 128K | X        |
+
+## Known bugs
+- No sounds for Spectrum emulators
+- Some 128K game tape not played perfectly
+- Some demos from the demoscene are not played at all or inconsistantly
+
 ## License
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for the full text.
 
