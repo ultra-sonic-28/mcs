@@ -1,4 +1,4 @@
-// Package spectrum implements the ZX Spectrum 48K machine logic.
+// Package spectrum implements the ZX Spectrum machine logic.
 package spectrum
 
 import (

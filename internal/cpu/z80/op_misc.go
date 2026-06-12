@@ -112,6 +112,7 @@ func initMisc() {
 		Execute: func(cpu *CPU) int {
 			cpu.IFF1 = true
 			cpu.IFF2 = true
+			cpu.EIInProgress = true
 			return 4
 		},
 	})

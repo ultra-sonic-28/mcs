@@ -1,4 +1,4 @@
-// Package spectrum implements the ZX Spectrum 48K machine logic.
+// Package spectrum implements the ZX Spectrum 48K and 128K machine logic.
 package spectrum
 
 import (
@@ -16,34 +16,67 @@ const (
 	FramesPerSecond = 50
 	// CyclesPerFrame is the exact number of T-cycles in a 50Hz Spectrum 48K frame.
 	CyclesPerFrame = 69888
+	// CyclesPerFrame128 is the exact number of T-cycles in a 50Hz Spectrum 128K frame.
+	CyclesPerFrame128 = 70908
 )
 
-// Machine represents the complete ZX Spectrum 48K emulator.
-type Machine struct {
+// BaseMachine represents common logic for all ZX Spectrum models.
+type BaseMachine struct {
 	CPU *z80.CPU
-	Bus *Bus
+	Bus Bus
 
 	// AutoStart state
 	autoStartEnabled bool
 	autoStartStep    int
 	autoStartTimer   int
 	autoStartTyping  bool
+
+	// Timing
+	CyclesPerFrame uint64
+}
+
+// Machine48 represents the ZX Spectrum 48K emulator.
+type Machine48 struct {
+	BaseMachine
+}
+
+// Machine128 represents the ZX Spectrum 128K emulator.
+type Machine128 struct {
+	BaseMachine
 }
 
 // NewMachine creates and initializes a new Spectrum 48K machine.
-func NewMachine() *Machine {
+func NewMachine() *Machine48 {
 	slog.Info("Creating Spectrum 48K Machine")
-	bus := NewBus()
+	bus := NewBus48()
 	cpu := z80.NewCPU(bus, bus)
 
-	return &Machine{
-		CPU: cpu,
-		Bus: bus,
+	return &Machine48{
+		BaseMachine: BaseMachine{
+			CPU:            cpu,
+			Bus:            bus,
+			CyclesPerFrame: CyclesPerFrame,
+		},
+	}
+}
+
+// NewMachine128 creates and initializes a new Spectrum 128K machine.
+func NewMachine128() *Machine128 {
+	slog.Info("Creating Spectrum 128K Machine")
+	bus := NewBus128()
+	cpu := z80.NewCPU(bus, bus)
+
+	return &Machine128{
+		BaseMachine: BaseMachine{
+			CPU:            cpu,
+			Bus:            bus,
+			CyclesPerFrame: CyclesPerFrame128,
+		},
 	}
 }
 
 // EnableAutoStart prepares the machine to automatically load and run the tape.
-func (m *Machine) EnableAutoStart() {
+func (m *BaseMachine) EnableAutoStart() {
 	m.autoStartEnabled = true
 	m.autoStartStep = 0
 	m.autoStartTimer = 150 // Wait 150 frames (3 seconds) for boot
@@ -51,14 +84,14 @@ func (m *Machine) EnableAutoStart() {
 }
 
 // Reset performs a hardware reset of the machine.
-func (m *Machine) Reset() {
+func (m *BaseMachine) Reset() {
 	//m.CPU.Reset()
 	// Spectrum ROM starts with DI (0xF3), so PC=0 is correct.
 }
 
 // RunFrame executes instructions for one 50Hz frame.
-func (m *Machine) RunFrame() {
-	targetCycles := uint64(CyclesPerFrame)
+func (m *BaseMachine) RunFrame() {
+	targetCycles := m.CyclesPerFrame
 	startCycles := m.CPU.Cycles
 
 	// Update AutoStart
@@ -69,8 +102,10 @@ func (m *Machine) RunFrame() {
 
 	for (m.CPU.Cycles - startCycles) < targetCycles {
 		// Instant Load Trap: Intercept ROM Tape Loading Routine (LD-BYTES at 0x0556)
-		if m.CPU.Regs.PC == 0x0556 {
-			if len(m.Bus.Tape.Blocks) > 0 {
+		// Only trap if we are in the 48K BASIC ROM (ROM 1 on 128K).
+		if m.CPU.Regs.PC == 0x0556 && m.Bus.IsRom1Active() {
+			tape := m.Bus.GetTape()
+			if len(tape.Blocks) > 0 {
 				m.instantLoadBlock()
 			} else {
 				slog.Debug("LD-BYTES called but no tape blocks loaded")
@@ -80,16 +115,16 @@ func (m *Machine) RunFrame() {
 		cycles := m.CPU.Step()
 
 		// Update Tape Signal
-		m.Bus.TapeInState = m.Bus.Tape.Step(uint32(cycles))
+		m.Bus.SetTapeInState(m.Bus.GetTape().Step(uint32(cycles)))
 	}
 
 	// Toggle Flash every 16 frames (approx 0.32s)
-	if m.CPU.Cycles%(69888*16) < 69888 {
-		m.Bus.Display.FlashState = !m.Bus.Display.FlashState
+	if m.CPU.Cycles%(m.CyclesPerFrame*16) < m.CyclesPerFrame {
+		m.Bus.GetDisplay().FlashState = !m.Bus.GetDisplay().FlashState
 	}
 }
 
-func (m *Machine) updateAutoStart() {
+func (m *BaseMachine) updateAutoStart() {
 	if !m.autoStartEnabled {
 		return
 	}
@@ -99,74 +134,76 @@ func (m *Machine) updateAutoStart() {
 		return
 	}
 
+	keyboard := m.Bus.GetKeyboard()
+
 	// Keyboard sequence for LOAD "" : RUN <ENTER>
 	// 48K mode keywords: J -> LOAD, Symbol Shift + P -> ", Symbol Shift + Z -> :, R -> RUN
 	switch m.autoStartStep {
 	case 0: // Press J (LOAD)
 		slog.Debug("Auto-start: Pressing J")
 		m.autoStartTyping = true
-		m.Bus.Keyboard.SetKeyState(KeyJ, true)
+		keyboard.SetKeyState(KeyJ, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 1: // Release J
 		slog.Debug("Auto-start: Releasing J")
-		m.Bus.Keyboard.SetKeyState(KeyJ, false)
+		keyboard.SetKeyState(KeyJ, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 2: // Press Symbol Shift
 		slog.Debug("Auto-start: Pressing Symbol Shift")
-		m.Bus.Keyboard.SetKeyState(KeySymbolShift, true)
+		keyboard.SetKeyState(KeySymbolShift, true)
 		m.autoStartTimer = 5
 		m.autoStartStep++
 	case 3: // Press P (")
 		slog.Debug("Auto-start: Pressing P (first quote)")
-		m.Bus.Keyboard.SetKeyState(KeyP, true)
+		keyboard.SetKeyState(KeyP, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 4: // Release P
 		slog.Debug("Auto-start: Releasing P")
-		m.Bus.Keyboard.SetKeyState(KeyP, false)
+		keyboard.SetKeyState(KeyP, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 5: // Press P again (")
 		slog.Debug("Auto-start: Pressing P (second quote)")
-		m.Bus.Keyboard.SetKeyState(KeyP, true)
+		keyboard.SetKeyState(KeyP, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 6: // Release P
 		slog.Debug("Auto-start: Releasing P")
-		m.Bus.Keyboard.SetKeyState(KeyP, false)
+		keyboard.SetKeyState(KeyP, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 7: // Press Z (:)
 		slog.Debug("Auto-start: Pressing Z (colon)")
-		m.Bus.Keyboard.SetKeyState(KeyZ, true)
+		keyboard.SetKeyState(KeyZ, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 8: // Release Z and Symbol Shift
 		slog.Debug("Auto-start: Releasing Z and Symbol Shift")
-		m.Bus.Keyboard.SetKeyState(KeyZ, false)
-		m.Bus.Keyboard.SetKeyState(KeySymbolShift, false)
+		keyboard.SetKeyState(KeyZ, false)
+		keyboard.SetKeyState(KeySymbolShift, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 9: // Press R (RUN)
 		slog.Debug("Auto-start: Pressing R (RUN)")
-		m.Bus.Keyboard.SetKeyState(KeyR, true)
+		keyboard.SetKeyState(KeyR, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 10: // Release R
 		slog.Debug("Auto-start: Releasing R")
-		m.Bus.Keyboard.SetKeyState(KeyR, false)
+		keyboard.SetKeyState(KeyR, false)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 11: // Press Enter
 		slog.Debug("Auto-start: Pressing Enter")
-		m.Bus.Keyboard.SetKeyState(KeyEnter, true)
+		keyboard.SetKeyState(KeyEnter, true)
 		m.autoStartTimer = 10
 		m.autoStartStep++
 	case 12: // Release Enter
 		slog.Debug("Auto-start: Releasing Enter")
-		m.Bus.Keyboard.SetKeyState(KeyEnter, false)
+		keyboard.SetKeyState(KeyEnter, false)
 		m.autoStartTimer = 100 // Wait 2s
 		m.autoStartStep++
 	case 13: // Finished typing
@@ -176,8 +213,8 @@ func (m *Machine) updateAutoStart() {
 	}
 }
 
-func (m *Machine) instantLoadBlock() {
-	t := m.Bus.Tape
+func (m *BaseMachine) instantLoadBlock() {
+	t := m.Bus.GetTape()
 	if t.CurrentBlock >= len(t.Blocks) {
 		slog.Debug("LD-BYTES called but all tape blocks already loaded")
 		return
@@ -244,19 +281,32 @@ func (m *Machine) instantLoadBlock() {
 	if t.CurrentBlock >= len(t.Blocks) {
 		t.Active = false
 		slog.Info("Tape loading finished (Instant)")
-
-		// Some demos might need interrupts enabled to start
-		m.CPU.IFF1 = true
-		m.CPU.IFF2 = true
 	}
 }
 
 // Run executes the machine using Ebitengine.
-// This is a blocking call.
-func (m *Machine) Run() error {
-	slog.Info("Starting Spectrum 48K Ebitengine loop")
+func (m *BaseMachine) Run() error {
+	slog.Info("Starting Spectrum Ebitengine loop")
 	ebiten.SetWindowSize(ScreenWidth*2, ScreenHeight*2)
-	ebiten.SetWindowTitle("MCS - ZX Spectrum 48K")
+	ebiten.SetWindowTitle("MCS - ZX Spectrum")
 	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
 	return ebiten.RunGame(m)
+}
+
+// Update handles logical state changes.
+func (m *BaseMachine) Update() error {
+	m.UpdateKeyboard()
+	m.RunFrame()
+	return nil
+}
+
+// Draw handles rendering.
+func (m *BaseMachine) Draw(screen *ebiten.Image) {
+	m.Bus.GetDisplay().RenderFrame(m.Bus.GetDisplayMemory())
+	screen.WritePixels(m.Bus.GetDisplay().FrameBuffer[:])
+}
+
+// Layout defines the screen dimensions.
+func (m *BaseMachine) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return ScreenWidth, ScreenHeight
 }

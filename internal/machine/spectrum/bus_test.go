@@ -1,4 +1,4 @@
-// Package spectrum implements the ZX Spectrum 48K machine logic.
+// Package spectrum implements the ZX Spectrum machine logic.
 package spectrum
 
 import (
@@ -7,7 +7,8 @@ import (
 )
 
 func TestBus(t *testing.T) {
-	dsl.RunScenarios(t, busScenarios)
+	dsl.RunScenarios(t, bus48Scenarios)
+	dsl.RunScenarios(t, bus128Scenarios)
 	dsl.RunScenarios(t, keyboardScenarios)
 	dsl.RunScenarios(t, displayScenarios)
 	dsl.RunScenarios(t, machineScenarios)

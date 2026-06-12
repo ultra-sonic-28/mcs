@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Implementation of Spectrum 128K emulator.
+- New `Bus` interface in `internal/machine/spectrum/interfaces.go` to support different memory models (48K/128K).
+- `BaseBus` struct to group common Spectrum components (Keyboard, Display, Tape, ULA state).
+- `Bus128` implementation with 128KB RAM (8 banks), 32KB ROM (2 banks), and memory paging via port `0x7FFD`.
+- AY-3-8912 Programmable Sound Generator emulator (basic register support) in `internal/machine/spectrum/ay38912.go`.
+- `Machine128` implementation with 128K-specific timing (70908 cycles per frame) and ROMs.
+- Support for Spectrum 128K shadow screen switching.
+- Updated `cmd/mcs/main.go` to support `--machine spectrum128`.
+- Unit tests for Spectrum 128K RAM/ROM paging and AY register access.
+
+### Fixed
+- Fixed a bug where `EI` (Enable Interrupts) allowed an interrupt to occur immediately instead of after the next instruction.
+- Fixed `instantLoadBlock` to only intercept `LD-BYTES` if ROM 1 (BASIC) is active, preventing crashes in 128K mode.
+- Removed forced interrupt enabling after instant load, which was causing issues with games that weren't ready for interrupts.
+- Broadened I/O port decoding for `0x7FFD`, `0xFFFD`, and `0xBFFD` to support standard 128K hardware aliases.
+
+### Changed
+- Updated package documentation in `internal/machine/spectrum/` to reflect support for multiple ZX Spectrum models.
+- Refactored Spectrum 48K `Machine` into `BaseMachine` and `Machine48`.
+- Renamed Spectrum 48K `Bus` to `Bus48` and moved it to its own file `internal/machine/spectrum/bus48.go`.
+- Moved Ebitengine loop and frame rendering to `BaseMachine` for shared use across models.
+- Updated all Spectrum tests to use `NewBus48()` and `NewMachine()`.
+
 ## [0.0.0.20] - 2026-06-09
 
 ### Added
@@ -169,10 +193,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Specialized flag update utilities for 8-bit increment (`UpdateFlagsInc8`) and decrement (`UpdateFlagsDec8`).
 - Updated `op_core.go` to register new `INC/DEC` instructions.
 - DSL-based unit tests for all implemented Z80 and Z80N instructions.
-
-### Changed
-- Modified the `release` command in `magefile.go` to automatically compile Z80 assembly examples before packaging assets.
-- Added a new `compileExamples` function in `magefile.go` to perform incremental compilation of Z80 examples using `vasmz80_std.exe`.
-- Updated `magefile.go` to isolate Z80 exercisers in the `mage zex` command.
-- Refactored `internal/cpu/z80/op_core.go` into group-specific files for better maintainability.
-- Updated `op_core.go` to serve as a central registry for all instruction groups.

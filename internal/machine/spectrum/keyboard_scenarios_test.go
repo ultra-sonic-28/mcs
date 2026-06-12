@@ -1,4 +1,4 @@
-// Package spectrum implements the ZX Spectrum 48K machine logic.
+// Package spectrum implements the ZX Spectrum machine logic.
 package spectrum
 
 import (
@@ -9,7 +9,7 @@ import (
 
 var keyboardScenarios = []dsl.Scenario{
 	dsl.NewScenario("Keyboard scanning basic", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		// No keys pressed: bits 0-4 should be 1
 		// Port 0xFEFE selects Caps Shift row
 		val := bus.In(0xFEFE)
@@ -26,7 +26,7 @@ var keyboardScenarios = []dsl.Scenario{
 		assert.Equal(t, "Scan 0xFEFE (Z released)", val & 0x1F, uint8(0x1F))
 	}),
 	dsl.NewScenario("Keyboard multiple rows scanning", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		bus.Keyboard.SetKeyState(KeyA, true) // Bit 0 of row 0xFD
 		bus.Keyboard.SetKeyState(KeyQ, true) // Bit 0 of row 0xFB
 		
@@ -40,7 +40,7 @@ var keyboardScenarios = []dsl.Scenario{
 		assert.Equal(t, "Scan 0xFCFE (both rows)", bus.In(0xFCFE) & 0x1F, uint8(0x1E))
 	}),
 	dsl.NewScenario("ULA Out Port 0xFE", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		// Border 2 (Red), MIC on, Beeper off
 		bus.Out(0x00FE, 0x0A) // 0000 1010 -> Border 2, MIC bit 3=1, Beeper bit 4=0
 		assert.Equal(t, "Border Color", bus.BorderColor, uint8(2))
@@ -53,7 +53,7 @@ var keyboardScenarios = []dsl.Scenario{
 		assert.True(t, "Beeper State", bus.BeeperState)
 	}),
 	dsl.NewScenario("Tape input bit 6", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		bus.TapeInState = true
 		assert.Equal(t, "Tape bit 6 high", bus.In(0xFEFE) & 0x40, uint8(0x40))
 		

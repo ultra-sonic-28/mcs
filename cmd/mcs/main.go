@@ -12,6 +12,8 @@ import (
 	"mcs/internal/machine/spectrum"
 	"os"
 	"path/filepath"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var (
@@ -23,7 +25,7 @@ func main() {
 	fmt.Printf("MCS v%s, built on %s\n\n", Version, BuildDate)
 
 	// --- 1. Command Line Options ---
-	machineType := flag.String("machine", "z80", "Machine type to emulate (z80, spectrum)")
+	machineType := flag.String("machine", "z80", "Machine type to emulate (z80, spectrum, spectrum128)")
 	programPath := flag.String("program", "", "Path to the binary program to load (for z80 machine)")
 	tapePath := flag.String("tape", "", "Path to the .tap file to load (for spectrum machine)")
 	flag.Parse()
@@ -51,8 +53,8 @@ func main() {
 
 	slog.Info("Starting MCS (Multi CPUs System)", "machine", *machineType)
 
-	if *machineType == "spectrum" {
-		runSpectrum(*tapePath)
+	if *machineType == "spectrum" || *machineType == "spectrum128" {
+		runSpectrum(*machineType, *tapePath)
 		return
 	}
 
@@ -92,25 +94,44 @@ func main() {
 	slog.Info("MCS shutdown")
 }
 
-func runSpectrum(tapePath string) {
-	m := spectrum.NewMachine()
-	m.Reset()
+func runSpectrum(machineType string, tapePath string) {
+	var m ebiten.Game
+	var bus spectrum.Bus
+	var autoStarter interface{ EnableAutoStart() }
+
+	if machineType == "spectrum128" {
+		m128 := spectrum.NewMachine128()
+		m = m128
+		bus = m128.Bus
+		autoStarter = m128
+	} else {
+		m48 := spectrum.NewMachine()
+		m = m48
+		bus = m48.Bus
+		autoStarter = m48
+	}
 
 	// Report loaded instructions
 	z80.LogAllInstructions()
 	slog.Info("CPU initialization complete", "instructions_loaded", z80.CountInstructions())
 
 	if tapePath != "" {
-		if err := m.Bus.Tape.LoadTAP(tapePath); err != nil {
+		if err := bus.GetTape().LoadTAP(tapePath); err != nil {
 			slog.Error("⚠️ failed to load tape", "error", err)
 			os.Exit(1)
 		}
-		m.EnableAutoStart()
+		autoStarter.EnableAutoStart()
 	}
 
-	if err := m.Run(); err != nil {
-		slog.Error("⚠️ machine error", "error", err)
-		os.Exit(1)
+	type Runner interface {
+		Run() error
+	}
+
+	if r, ok := m.(Runner); ok {
+		if err := r.Run(); err != nil {
+			slog.Error("⚠️ machine error", "error", err)
+			os.Exit(1)
+		}
 	}
 }
 

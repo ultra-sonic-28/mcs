@@ -1,4 +1,4 @@
-// Package spectrum implements the ZX Spectrum 48K machine logic.
+// Package spectrum implements the ZX Spectrum machine logic.
 package spectrum
 
 import (
@@ -9,7 +9,7 @@ import (
 
 var displayScenarios = []dsl.Scenario{
 	dsl.NewScenario("Display pixel memory mapping", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		
 		// Set pixel at (0, 0)
 		// Address: 010 [00] [000] [000] [00000] -> 0x4000
@@ -36,7 +36,7 @@ var displayScenarios = []dsl.Scenario{
 		assert.Equal(t, "Pixel (1,0) Blue", bus.Display.FrameBuffer[pixelIdx+2], paperColor.B)
 	}),
 	dsl.NewScenario("Display non-linear mapping (Line 1)", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		
 		// Y = 1: [00][00][001][000]
 		// memY = (0 << 11) | (1 << 8) | (0 << 5) = 0x0100
@@ -51,7 +51,7 @@ var displayScenarios = []dsl.Scenario{
 		assert.Equal(t, "Pixel (0,1) R", bus.Display.FrameBuffer[pixelIdx+0], uint8(205)) // White
 	}),
 	dsl.NewScenario("Display flash toggling", func(t *testing.T) {
-		bus := NewBus()
+		bus := NewBus48()
 		
 		bus.Write(0x4000, 0x80)
 		bus.Write(0x5800, 0x87) // Flash=1, Bright=0, Paper=0, Ink=7 (White on Black)

@@ -25,6 +25,7 @@ type CPU struct {
 	Halted           bool   // CPU is in HALT state
 	Cycles           uint64 // Total number of T-cycles executed
 	LastDisplacement int8   // Displacement for DDCB/FDCB instructions
+	EIInProgress     bool   // EI instruction just executed, delay interrupt sampling
 }
 
 // NewCPU creates and initializes a new Z80 CPU instance.
@@ -90,6 +91,11 @@ func (c *CPU) SetHalt(halted bool) {
 // HandleInterrupts checks for pending interrupts and processes them if possible.
 // It returns the number of T-cycles consumed.
 func (c *CPU) HandleInterrupts() int {
+	if c.EIInProgress {
+		c.EIInProgress = false
+		return 0
+	}
+
 	// 1. Non-Maskable Interrupt (NMI) - Highest priority, edge-triggered
 	if c.NMI {
 		c.NMI = false
