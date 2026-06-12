@@ -9,7 +9,7 @@ import (
 	"mcs/internal/config"
 	"mcs/internal/cpu/z80"
 	"mcs/internal/logger"
-	"mcs/internal/machine/spectrum"
+	"mcs/internal/machine/spectrum/machine"
 	"os"
 	"path/filepath"
 
@@ -96,16 +96,16 @@ func main() {
 
 func runSpectrum(machineType string, tapePath string) {
 	var m ebiten.Game
-	var bus spectrum.Bus
+	var bus machine.Bus
 	var autoStarter interface{ EnableAutoStart() }
 
 	if machineType == "spectrum128" {
-		m128 := spectrum.NewMachine128()
+		m128 := machine.NewMachine128()
 		m = m128
 		bus = m128.Bus
 		autoStarter = m128
 	} else {
-		m48 := spectrum.NewMachine()
+		m48 := machine.NewMachine()
 		m = m48
 		bus = m48.Bus
 		autoStarter = m48

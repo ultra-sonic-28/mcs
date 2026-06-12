@@ -27,6 +27,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broadened I/O port decoding for `0x7FFD`, `0xFFFD`, and `0xBFFD` to support standard 128K hardware aliases.
 
 ### Changed
+- Refactored `internal/machine/spectrum` into specialized subpackages: `sound`, `bus`, `keyboard`, `memory`, `tape`, `display`, `gui`, and `machine`.
+- Moved `ay38912.go` to `internal/machine/spectrum/sound/`.
+- Moved bus implementation to `internal/machine/spectrum/bus/`.
+- Moved keyboard logic to `internal/machine/spectrum/keyboard/`.
+- Moved memory management to `internal/machine/spectrum/memory/`.
+- Moved tape handling to `internal/machine/spectrum/tape/`.
+- Moved display rendering to `internal/machine/spectrum/display/`.
+- Moved GUI key mapping to `internal/machine/spectrum/gui/`.
+- Moved machine integration to `internal/machine/spectrum/machine/`.
+- Centralized `Bus` interface and `UpdateKeyboard` method in the `machine` package to avoid cyclic dependencies.
+- Updated all internal imports and the main application entry point to reflect the new package structure.
 - Refactored Spectrum machine implementation to separate bus management from memory management.
 - Introduced `Memory` interface and specific implementations: `Memory48` for Spectrum 48K and `Memory128` for Spectrum 128K.
 - Moved ROM/RAM arrays and paging logic from `Bus48`/`Bus128` to `Memory48`/`Memory128`.
