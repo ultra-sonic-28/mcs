@@ -67,15 +67,17 @@ go test ./internal/cpu/z80/... -v
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for the full text.
 
 ## Attributions
-Icons / Images
+### Icons / Images
 - <a href="https://www.flaticon.com/free-icons/ram" title="ram icons">Ram icons created by Smashicons - Flaticon</a>
 
-Program tapes
-- [Tetris - 40th Anniversary Edition](https://spectrumcomputing.co.uk/entry/45451/ZX-Spectrum/Tetris-40th_Anniversary_Edition)
-- [Addix](https://spectrumcomputing.co.uk/entry/45446/ZX-Spectrum/Addix)
-
-Tapes from the demoscene
-- [Forever 20 Invitation](https://spectrumcomputing.co.uk/entry/34414/ZX-Spectrum/Forever_20_Invitation)
-- [Gemba Demo](https://spectrumcomputing.co.uk/entry/27476/ZX-Spectrum/Gemba_Demo)
-- [Chaos](https://spectrumcomputing.co.uk/entry/34398/ZX-Spectrum/Chaos)
-- [Synergy 2024 Invitation](https://spectrumcomputing.co.uk/entry/43018/ZX-Spectrum/Synergy_2024_Invitation)
+### Tapes
+| Type | Title / Link  | Machine | Status | Comments |
+| ---- | ------------- | ------- | :----: | -------- |
+| Game | [Tetris - 40th Anniversary Edition](https://spectrumcomputing.co.uk/entry/45451/ZX-Spectrum/Tetris-40th_Anniversary_Edition) | Spectrum 48K | ⚠️ | <ul><li>No speaker beep</li></ul> |
+| Game | [Addix](https://spectrumcomputing.co.uk/entry/45446/ZX-Spectrum/Addix) | Spectrum 48K | ✅ | |
+| Game | [4K Race Refueled](https://spectrumcomputing.co.uk/entry/18318/ZX-Spectrum/4K_Race_Refueled) | Spectrum 128K | ✅ | |
+| Demo | [Forever 20 Invitation](https://spectrumcomputing.co.uk/entry/34414/ZX-Spectrum/Forever_20_Invitation) | Spectrum 48K | ⚠️ | <ul><li>No sound</li></ul> |
+| Demo | [Gemba Demo](https://spectrumcomputing.co.uk/entry/27476/ZX-Spectrum/Gemba_Demo) | Spectrum 48K | ⚠️ | <ul><li>No sound</li><li>Some parts of the demo are not properly handled </li></ul> |
+| Demo | [Chaos](https://spectrumcomputing.co.uk/entry/34398/ZX-Spectrum/Chaos) | Spectrum 48K | ⚠️ | <ul><li>No sound</li></ul> |
+| Demo | [Synergy 2024 Invitation](https://spectrumcomputing.co.uk/entry/43018/ZX-Spectrum/Synergy_2024_Invitation) | Spectrum 48K / Spectrum 128K | ⚠️ | <ul><li>No sound</li></ul> |
+| Demo | [Action](https://spectrumcomputing.co.uk/entry/7233/ZX-Spectrum/Action) | Spectrum 128K | ⚠️ | <ul><li>No sound</li><li>Hang in rotating checkerboard</li></ul> |
