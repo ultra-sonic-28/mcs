@@ -2,14 +2,12 @@ package spectrum
 
 import (
 	"log/slog"
-	spectrumrom "mcs/assets/machines/spectrum"
 )
 
 // Bus48 implements the memory and I/O bus for the ZX Spectrum 48K.
 type Bus48 struct {
 	BaseBus
-	rom [16384]uint8
-	ram [49152]uint8
+	Memory *Memory48
 }
 
 // NewBus48 creates a new Spectrum 48K Bus with the embedded ROM loaded.
@@ -21,24 +19,15 @@ func NewBus48() *Bus48 {
 			Display:  NewDisplay(),
 			Tape:     NewTape(),
 		},
+		Memory: NewMemory48(),
 	}
-
-	// Load ROM
-	romData := spectrumrom.Rom48
-	if len(romData) != 16384 {
-		slog.Warn("Spectrum 48K ROM size is unexpected", "expected", 16384, "actual", len(romData))
-	}
-	copy(b.rom[:], romData)
 
 	return b
 }
 
 // Read returns the byte at the specified memory address.
 func (b *Bus48) Read(addr uint16) uint8 {
-	if addr < 16384 {
-		return b.rom[addr]
-	}
-	return b.ram[addr-16384]
+	return b.Memory.Read(addr)
 }
 
 // Read16 returns the 16-bit word at the specified memory address (little-endian).
@@ -48,10 +37,7 @@ func (b *Bus48) Read16(addr uint16) uint16 {
 
 // Write stores a byte at the specified memory address.
 func (b *Bus48) Write(addr uint16, val uint8) {
-	if addr < 16384 {
-		return
-	}
-	b.ram[addr-16384] = val
+	b.Memory.Write(addr, val)
 }
 
 // In reads a byte from the specified I/O port.
@@ -83,9 +69,9 @@ func (b *Bus48) Out(port uint16, val uint8) {
 
 // GetDisplayMemory returns the 6912 bytes of memory used for the display.
 func (b *Bus48) GetDisplayMemory() []byte {
-	return b.ram[0:6912]
+	return b.Memory.GetDisplayMemory()
 }
 
 func (b *Bus48) IsRom1Active() bool {
-	return true
+	return b.Memory.IsRom1Active()
 }

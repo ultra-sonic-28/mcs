@@ -2,21 +2,13 @@ package spectrum
 
 import (
 	"log/slog"
-	spectrumrom "mcs/assets/machines/spectrum"
 )
 
 // Bus128 implements the memory and I/O bus for the ZX Spectrum 128K.
 type Bus128 struct {
 	BaseBus
-	rom [2][16384]uint8
-	ram [8][16384]uint8
-
-	currentRom   uint8
-	currentRam   uint8
-	pagingLocked bool
-	activeScreen uint8 // 5 or 7
-
-	AY *AY38912
+	Memory *Memory128
+	AY     *AY38912
 }
 
 // NewBus128 creates a new Spectrum 128K Bus with the embedded ROMs loaded.
@@ -28,35 +20,16 @@ func NewBus128() *Bus128 {
 			Display:  NewDisplay(),
 			Tape:     NewTape(),
 		},
-		activeScreen: 5,
-		AY:           NewAY38912(),
+		Memory: NewMemory128(),
+		AY:     NewAY38912(),
 	}
-
-	// Load ROMs
-	if len(spectrumrom.Rom128_0) != 16384 {
-		slog.Warn("Spectrum 128K ROM 1 size is unexpected", "expected", 16384, "actual", len(spectrumrom.Rom128_0))
-	}
-	if len(spectrumrom.Rom128_1) != 16384 {
-		slog.Warn("Spectrum 128K ROM 2 size is unexpected", "expected", 16384, "actual", len(spectrumrom.Rom128_1))
-	}
-	copy(b.rom[0][:], spectrumrom.Rom128_0)
-	copy(b.rom[1][:], spectrumrom.Rom128_1)
 
 	return b
 }
 
 // Read returns the byte at the specified memory address.
 func (b *Bus128) Read(addr uint16) uint8 {
-	switch {
-	case addr < 0x4000:
-		return b.rom[b.currentRom][addr]
-	case addr < 0x8000:
-		return b.ram[5][addr-0x4000]
-	case addr < 0xC000:
-		return b.ram[2][addr-0x8000]
-	default:
-		return b.ram[b.currentRam][addr-0xC000]
-	}
+	return b.Memory.Read(addr)
 }
 
 // Read16 returns the 16-bit word at the specified memory address (little-endian).
@@ -66,17 +39,7 @@ func (b *Bus128) Read16(addr uint16) uint16 {
 
 // Write stores a byte at the specified memory address.
 func (b *Bus128) Write(addr uint16, val uint8) {
-	switch {
-	case addr < 0x4000:
-		// ROM is read-only
-		return
-	case addr < 0x8000:
-		b.ram[5][addr-0x4000] = val
-	case addr < 0xC000:
-		b.ram[2][addr-0x8000] = val
-	default:
-		b.ram[b.currentRam][addr-0xC000] = val
-	}
+	b.Memory.Write(addr, val)
 }
 
 // In reads a byte from the specified I/O port.
@@ -116,26 +79,7 @@ func (b *Bus128) Out(port uint16, val uint8) {
 
 	// Port 0x7FFD: Memory Paging (bit 1=0, bit 15=0)
 	if (port & 0x8002) == 0 {
-		if b.pagingLocked {
-			return
-		}
-
-		b.currentRam = val & 0x07
-		if (val & 0x08) != 0 {
-			b.activeScreen = 7
-		} else {
-			b.activeScreen = 5
-		}
-		if (val & 0x10) != 0 {
-			b.currentRom = 1
-		} else {
-			b.currentRom = 0
-		}
-		if (val & 0x20) != 0 {
-			b.pagingLocked = true
-		}
-
-		slog.Debug("Spectrum 128K Paging", "ram", b.currentRam, "rom", b.currentRom, "screen", b.activeScreen, "locked", b.pagingLocked)
+		b.Memory.Page(val)
 		return
 	}
 
@@ -154,9 +98,9 @@ func (b *Bus128) Out(port uint16, val uint8) {
 
 // GetDisplayMemory returns the 6912 bytes of memory used for the display.
 func (b *Bus128) GetDisplayMemory() []byte {
-	return b.ram[b.activeScreen][0:6912]
+	return b.Memory.GetDisplayMemory()
 }
 
 func (b *Bus128) IsRom1Active() bool {
-	return b.currentRom == 1
+	return b.Memory.IsRom1Active()
 }

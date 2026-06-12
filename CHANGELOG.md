@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Spectrum 128K shadow screen switching.
 - Updated `cmd/mcs/main.go` to support `--machine spectrum128`.
 - Unit tests for Spectrum 128K RAM/ROM paging and AY register access.
+- New DSL-based unit tests for `Memory48` and `Memory128` implementations in `internal/machine/spectrum/memory48_scenarios_test.go` and `internal/machine/spectrum/memory128_scenarios_test.go`.
 
 ### Fixed
 - Fixed a bug where `EI` (Enable Interrupts) allowed an interrupt to occur immediately instead of after the next instruction.
@@ -25,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broadened I/O port decoding for `0x7FFD`, `0xFFFD`, and `0xBFFD` to support standard 128K hardware aliases.
 
 ### Changed
+- Refactored Spectrum machine implementation to separate bus management from memory management.
+- Introduced `Memory` interface and specific implementations: `Memory48` for Spectrum 48K and `Memory128` for Spectrum 128K.
+- Moved ROM/RAM arrays and paging logic from `Bus48`/`Bus128` to `Memory48`/`Memory128`.
+- Created `internal/machine/spectrum/memory.go`, `internal/machine/spectrum/memory48.go`, and `internal/machine/spectrum/memory128.go`.
+- Updated `Bus48` and `Bus128` to delegate memory operations to their respective `Memory` components.
+- Maintained paging mode management for Spectrum 128K within the new memory structure.
+- Ensured tape autostart mechanism remains functional through the refactored bus interface.
 - Updated package documentation in `internal/machine/spectrum/` to reflect support for multiple ZX Spectrum models.
 - Refactored Spectrum 48K `Machine` into `BaseMachine` and `Machine48`.
 - Renamed Spectrum 48K `Bus` to `Bus48` and moved it to its own file `internal/machine/spectrum/bus48.go`.
