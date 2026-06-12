@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `cmd/mcs/main.go` to support `--machine spectrum128`.
 - Unit tests for Spectrum 128K RAM/ROM paging and AY register access.
 - New DSL-based unit tests for `Memory48` and `Memory128` implementations in `internal/machine/spectrum/memory48_scenarios_test.go` and `internal/machine/spectrum/memory128_scenarios_test.go`.
+- New DSL-based unit tests for `BaseBus` shared functionality in `internal/machine/spectrum/bus_scenarios_test.go`.
 
 ### Fixed
 - Fixed a bug where `EI` (Enable Interrupts) allowed an interrupt to occur immediately instead of after the next instruction.
@@ -37,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored Spectrum 48K `Machine` into `BaseMachine` and `Machine48`.
 - Renamed Spectrum 48K `Bus` to `Bus48` and moved it to its own file `internal/machine/spectrum/bus48.go`.
 - Moved Ebitengine loop and frame rendering to `BaseMachine` for shared use across models.
+- Renamed `internal/machine/spectrum/bus_test.go` to `internal/machine/spectrum/spectrum_test.go` to better reflect its role as the main test runner for all Spectrum machines.
 - Updated all Spectrum tests to use `NewBus48()` and `NewMachine()`.
 
 ## [0.0.0.20] - 2026-06-09

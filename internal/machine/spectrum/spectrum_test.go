@@ -6,7 +6,8 @@ import (
 	"testing"
 )
 
-func TestBus(t *testing.T) {
+func TestSpectrum(t *testing.T) {
+	dsl.RunScenarios(t, baseBusScenarios)
 	dsl.RunScenarios(t, bus48Scenarios)
 	dsl.RunScenarios(t, bus128Scenarios)
 	dsl.RunScenarios(t, keyboardScenarios)
