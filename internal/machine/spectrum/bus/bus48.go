@@ -6,6 +6,7 @@ import (
 	"mcs/internal/machine/spectrum/display"
 	"mcs/internal/machine/spectrum/keyboard"
 	"mcs/internal/machine/spectrum/memory"
+	"mcs/internal/machine/spectrum/sound"
 	"mcs/internal/machine/spectrum/tape"
 )
 
@@ -84,6 +85,11 @@ func (b *Bus48) Out(port uint16, val uint8) {
 // GetDisplayMemory returns the memory currently being used for display.
 func (b *Bus48) GetDisplayMemory() []byte {
 	return b.Memory.GetDisplayMemory()
+}
+
+// GetAY returns nil for Bus48 as it has no AY-3-8912 chip.
+func (b *Bus48) GetAY() *sound.AY38912 {
+	return nil
 }
 
 // IsRom1Active returns true for 48K as it only has one ROM.

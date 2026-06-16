@@ -109,6 +109,11 @@ func (b *Bus128) GetDisplayMemory() []byte {
 	return b.Memory.GetDisplayMemory()
 }
 
+// GetAY returns the AY-3-8912 chip for Bus128.
+func (b *Bus128) GetAY() *sound.AY38912 {
+	return b.Sound
+}
+
 // IsRom1Active returns true if the 48K BASIC ROM is currently active (ROM 1 on 128K).
 func (b *Bus128) IsRom1Active() bool {
 	return b.Memory.IsRom1Active()

@@ -26,3 +26,4 @@ func (b *BaseBus) GetDisplay() *display.Display     { return b.Display }
 func (b *BaseBus) GetBorderColor() uint8           { return b.BorderColor }
 func (b *BaseBus) GetTapeInState() bool            { return b.TapeInState }
 func (b *BaseBus) SetTapeInState(state bool)       { b.TapeInState = state }
+func (b *BaseBus) GetBeeperState() bool            { return b.BeeperState }

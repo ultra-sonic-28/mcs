@@ -59,7 +59,6 @@ go test ./internal/cpu/z80/... -v
 |     | Spectrum 128K | X        |
 
 ## Known bugs
-- No sounds for Spectrum emulators
 - Some 128K game tape not played perfectly
 - Some demos from the demoscene are not played at all or inconsistantly
 
@@ -73,11 +72,11 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ### Tapes
 | Type | Title / Link  | Machine | Status | Comments |
 | ---- | ------------- | ------- | :----: | -------- |
-| Game | [Tetris - 40th Anniversary Edition](https://spectrumcomputing.co.uk/entry/45451/ZX-Spectrum/Tetris-40th_Anniversary_Edition) | Spectrum 48K | ⚠️ | <ul><li>No speaker beep</li></ul> |
+| Game | [Tetris - 40th Anniversary Edition](https://spectrumcomputing.co.uk/entry/45451/ZX-Spectrum/Tetris-40th_Anniversary_Edition) | Spectrum 48K | ✅ |  |
 | Game | [Addix](https://spectrumcomputing.co.uk/entry/45446/ZX-Spectrum/Addix) | Spectrum 48K | ✅ | |
 | Game | [4K Race Refueled](https://spectrumcomputing.co.uk/entry/18318/ZX-Spectrum/4K_Race_Refueled) | Spectrum 128K | ✅ | |
-| Demo | [Forever 20 Invitation](https://spectrumcomputing.co.uk/entry/34414/ZX-Spectrum/Forever_20_Invitation) | Spectrum 48K | ⚠️ | <ul><li>No sound</li></ul> |
-| Demo | [Gemba Demo](https://spectrumcomputing.co.uk/entry/27476/ZX-Spectrum/Gemba_Demo) | Spectrum 48K | ⚠️ | <ul><li>No sound</li><li>Some parts of the demo are not properly handled </li></ul> |
-| Demo | [Chaos](https://spectrumcomputing.co.uk/entry/34398/ZX-Spectrum/Chaos) | Spectrum 48K | ⚠️ | <ul><li>No sound</li></ul> |
-| Demo | [Synergy 2024 Invitation](https://spectrumcomputing.co.uk/entry/43018/ZX-Spectrum/Synergy_2024_Invitation) | Spectrum 48K / Spectrum 128K | ⚠️ | <ul><li>No sound</li></ul> |
-| Demo | [Action](https://spectrumcomputing.co.uk/entry/7233/ZX-Spectrum/Action) | Spectrum 128K | ⚠️ | <ul><li>No sound</li><li>Hang in rotating checkerboard</li></ul> |
+| Demo | [Forever 20 Invitation](https://spectrumcomputing.co.uk/entry/34414/ZX-Spectrum/Forever_20_Invitation) | Spectrum 48K<br />Spectrum 128K | ✅<br />✅ |  |
+| Demo | [Gemba Demo](https://spectrumcomputing.co.uk/entry/27476/ZX-Spectrum/Gemba_Demo) | Spectrum 48K<br />Spectrum 128K | ✅<br />✅ |  |
+| Demo | [Chaos](https://spectrumcomputing.co.uk/entry/34398/ZX-Spectrum/Chaos) | Spectrum 48K<br />Spectrum 128K | ✅<br />✅ | <ul><li>The sounds are messy and inaudible, but this is the same for all tested emulators</li></ul> |
+| Demo | [Synergy 2024 Invitation](https://spectrumcomputing.co.uk/entry/43018/ZX-Spectrum/Synergy_2024_Invitation) | Spectrum 48K<br />Spectrum 128K | ✅<br />✅ |  |
+| Demo | [Action](https://spectrumcomputing.co.uk/entry/7233/ZX-Spectrum/Action) | Spectrum 128K | ⚠️ | <ul><li>Graphics hang up in rotating checkerboard, but music continues</li></ul> |

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Complete AY-3-8912 Programmable Sound Generator emulation including tone generators, noise generator, and envelope generator.
+- Stereo (ACB) panning support (Standard Spectrum 128k) for AY-3-8912 sound chip.
+- High-resolution 32-level volume table for smooth 5-bit envelope generation.
+- Moving average filter (size 4) for both left and right audio channels to reduce aliasing and "messiness".
+- New unit tests for AY-3-8912 stereo panning and corrected timing.
+- Integration with Ebitengine audio for real-time sound output.
+- Unit tests for AY-3-8912 synthesis logic.
 - Implementation of Spectrum 128K emulator.
 - New `Bus` interface in `internal/machine/spectrum/interfaces.go` to support different memory models (48K/128K).
 - `BaseBus` struct to group common Spectrum components (Keyboard, Display, Tape, ULA state).
@@ -21,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New DSL-based unit tests for `BaseBus` shared functionality in `internal/machine/spectrum/bus_scenarios_test.go`.
 
 ### Fixed
+- Improved AY-3-8912 sound implementation accuracy by adding internal clock dividers (8 for tones, 16 for noise, 128 for envelopes).
+- Corrected AY-3-8912 envelope generation logic to faithfully reproduce all 10 standard PSG shapes with 32-step resolution.
+- Refined AY-3-8912 noise generator with precise 17-bit LFSR logic.
+- Accurate AY-3-8912 clock rate (1773447 Hz) for Spectrum 128K.
+- Fixed a hang in Spectrum 128K mode when calling `m.audioPlayer.Play()` by wrapping it in a goroutine.
+- Fixed a race condition in `AY38912` audio buffer by adding a `sync.Mutex` for thread-safe access between the emulator loop and the audio player.
 - Fixed a bug where `EI` (Enable Interrupts) allowed an interrupt to occur immediately instead of after the next instruction.
 - Fixed `instantLoadBlock` to only intercept `LD-BYTES` if ROM 1 (BASIC) is active, preventing crashes in 128K mode.
 - Removed forced interrupt enabling after instant load, which was causing issues with games that weren't ready for interrupts.

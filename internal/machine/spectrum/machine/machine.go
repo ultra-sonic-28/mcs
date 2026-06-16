@@ -9,14 +9,18 @@ import (
 	"mcs/internal/machine/spectrum/display"
 	"mcs/internal/machine/spectrum/gui"
 	"mcs/internal/machine/spectrum/keyboard"
+	"mcs/internal/machine/spectrum/sound"
 	"mcs/internal/machine/spectrum/tape"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 const (
-	// ProcessorClock is 3.5 MHz
+	// ProcessorClock is 3.5 MHz (Spectrum 48K)
 	ProcessorClock = 3500000
+	// ProcessorClock128 is 3.5469 MHz (Spectrum 128K)
+	ProcessorClock128 = 3546900
 	// FramesPerSecond is 50 Hz
 	FramesPerSecond = 50
 	// CyclesPerFrame is the exact number of T-cycles in a 50Hz Spectrum 48K frame.
@@ -32,18 +36,20 @@ type Bus interface {
 	Read16(addr uint16) uint16
 	In(port uint16) uint8
 	Out(port uint16, val uint8)
-	
+
 	// GetDisplayMemory returns the memory currently being used for display.
 	GetDisplayMemory() []byte
-	
+
 	// Common components access
 	GetKeyboard() *keyboard.Keyboard
 	GetTape() *tape.Tape
 	GetDisplay() *display.Display
+	GetAY() *sound.AY38912
 	GetBorderColor() uint8
 	GetTapeInState() bool
 	SetTapeInState(state bool)
-	
+	GetBeeperState() bool
+
 	// IsRom1Active returns true if the 48K BASIC ROM is currently paged in.
 	IsRom1Active() bool
 }
@@ -60,7 +66,12 @@ type BaseMachine struct {
 	autoStartTyping  bool
 
 	// Timing
+	ClockRate      uint64
 	CyclesPerFrame uint64
+
+	// Audio
+	audioContext *audio.Context
+	audioPlayer  *audio.Player
 }
 
 // Machine48 represents the ZX Spectrum 48K emulator.
@@ -83,6 +94,7 @@ func NewMachine() *Machine48 {
 		BaseMachine: BaseMachine{
 			CPU:            cpu,
 			Bus:            b,
+			ClockRate:      ProcessorClock,
 			CyclesPerFrame: CyclesPerFrame,
 		},
 	}
@@ -98,6 +110,7 @@ func NewMachine128() *Machine128 {
 		BaseMachine: BaseMachine{
 			CPU:            cpu,
 			Bus:            b,
+			ClockRate:      ProcessorClock128,
 			CyclesPerFrame: CyclesPerFrame128,
 		},
 	}
@@ -140,6 +153,10 @@ func (m *BaseMachine) RunFrame() {
 	// Trigger Interrupt at the start of the frame (ULA behavior)
 	m.CPU.INT = true
 
+	ay := m.Bus.GetAY()
+	cyclesToNextSample := float64(m.ClockRate) / float64(sound.SampleRate)
+	accumulatedCycles := 0.0
+
 	for (m.CPU.Cycles - startCycles) < targetCycles {
 		// Instant Load Trap: Intercept ROM Tape Loading Routine (LD-BYTES at 0x0556)
 		// Only trap if we are in the 48K BASIC ROM (ROM 1 on 128K).
@@ -153,6 +170,24 @@ func (m *BaseMachine) RunFrame() {
 		}
 
 		cycles := m.CPU.Step()
+
+		// Update Sound
+		if ay != nil {
+			beeper := m.Bus.GetBeeperState()
+			for i := 0; i < cycles; i++ {
+				// AY clock is exactly half of CPU clock (1.77MHz)
+				if (startCycles+(m.CPU.Cycles-startCycles-uint64(cycles)+uint64(i)))%2 == 0 {
+					ay.Tick(beeper)
+				}
+
+				accumulatedCycles += 1.0
+				if accumulatedCycles >= cyclesToNextSample {
+					accumulatedCycles -= cyclesToNextSample
+					l, r := ay.GetSample()
+					ay.AddAudioSample(l, r)
+				}
+			}
+		}
 
 		// Update Tape Signal
 		m.Bus.SetTapeInState(m.Bus.GetTape().Step(uint32(cycles)))
@@ -324,12 +359,35 @@ func (m *BaseMachine) instantLoadBlock() {
 	}
 }
 
+func (m *BaseMachine) initAudio() {
+	if m.audioContext == nil {
+		m.audioContext = audio.NewContext(sound.SampleRate)
+	}
+	ay := m.Bus.GetAY()
+	if ay != nil && m.audioPlayer == nil {
+		var err error
+		m.audioPlayer, err = m.audioContext.NewPlayer(ay)
+		if err != nil {
+			slog.Error("Failed to create audio player", "error", err)
+			return
+		}
+		slog.Info("AudioPlayer created")
+		// Play in a goroutine to avoid hanging the main thread on some platforms/drivers
+		go func() {
+			m.audioPlayer.Play()
+			slog.Debug("AudioPlayer playback started")
+		}()
+	}
+}
+
 // Run executes the machine using Ebitengine.
 func (m *BaseMachine) Run() error {
-	slog.Info("Starting Spectrum Ebitengine loop")
+	m.initAudio()
+	slog.Info("Setting Ebitengine UI")
 	ebiten.SetWindowSize(display.ScreenWidth*2, display.ScreenHeight*2)
 	ebiten.SetWindowTitle("MCS - ZX Spectrum")
 	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
+	slog.Info("Starting Spectrum Ebitengine loop")
 	return ebiten.RunGame(m)
 }
 
