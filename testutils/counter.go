@@ -36,9 +36,10 @@ func getPackagePathFromCaller() string {
 		if strings.HasSuffix(file, "_test.go") {
 			dir := filepath.Dir(file)
 			dir = filepath.ToSlash(dir) // Unix-style
-			// On coupe la partie avant "starspace/"
-			if idx := strings.Index(dir, "starspace/"); idx >= 0 {
-				return dir[idx:] // "starspace/internal/errors" etc.
+			// On coupe la partie avant "mcs/"
+			// TODO: mcs/ must be configurable somewhere!!
+			if idx := strings.Index(dir, "mcs/"); idx >= 0 {
+				return dir[idx:] // "mcs/internal/errors" etc.
 			}
 			return dir
 		}

@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New DSL-based unit tests for `BaseBus` shared functionality in `internal/machine/spectrum/bus_scenarios_test.go`.
 
 ### Fixed
+- Fixed path error in `getPackagePathFromCaller()`.
 - `ebiten` module requirement must be direct.
 - Improved AY-3-8912 sound implementation accuracy by adding internal clock dividers (8 for tones, 16 for noise, 128 for envelopes).
 - Corrected AY-3-8912 envelope generation logic to faithfully reproduce all 10 standard PSG shapes with 32-step resolution.
