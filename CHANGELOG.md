@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added three new party demos.
 - Complete AY-3-8912 Programmable Sound Generator emulation including tone generators, noise generator, and envelope generator.
 - Stereo (ACB) panning support (Standard Spectrum 128k) for AY-3-8912 sound chip.
 - High-resolution 32-level volume table for smooth 5-bit envelope generation.

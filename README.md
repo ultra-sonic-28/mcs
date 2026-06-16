@@ -54,9 +54,9 @@ go test ./internal/cpu/z80/... -v
 
 | CPU | Machine       | Emulated |
 | --- | ------------- | :------: |
-| Z80 |               | X        |
-|     | Spectrum 48K  | X        |
-|     | Spectrum 128K | X        |
+| Z80 |               | ✅ |
+|     | Spectrum 48K  | ✅ |
+|     | Spectrum 128K | ✅ |
 
 ## Known bugs
 - Some 128K game tape not played perfectly
@@ -80,3 +80,6 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 | Demo | [Chaos](https://spectrumcomputing.co.uk/entry/34398/ZX-Spectrum/Chaos) | Spectrum 48K<br />Spectrum 128K | ✅<br />✅ | <ul><li>The sounds are messy and inaudible, but this is the same for all tested emulators</li></ul> |
 | Demo | [Synergy 2024 Invitation](https://spectrumcomputing.co.uk/entry/43018/ZX-Spectrum/Synergy_2024_Invitation) | Spectrum 48K<br />Spectrum 128K | ✅<br />✅ |  |
 | Demo | [Action](https://spectrumcomputing.co.uk/entry/7233/ZX-Spectrum/Action) | Spectrum 128K | ⚠️ | <ul><li>Graphics hang up in rotating checkerboard, but music continues</li></ul> |
+| Demo | [Scrollerparty](https://www.pouet.net/prod.php?which=104454) | Spectrum 128k | ✅ |  |
+| Demo | [Another Lightspeed Release](https://www.pouet.net/prod.php?which=94430) | Spectrum 128k | ✅ |  |
+| Demo | [Kebugaruha](https://spectrumcomputing.co.uk/entry/43014) | Spectrum 128k | ✅ |  |
