@@ -1,0 +1,101 @@
+                            4K Race refueled
+                            ================
+
+A 4k minigame for the Spectrum 128k
+Winner of the 2005 Minigame Compo (http://www.ffd2.com/minigame/)
+
+Version 2.01
+
+
+CREDITS
+
+Code and manual: Paolo Ferraris   (pieffe8.at.libero.it)
+Graphics: Luciano Costarelli
+
+Engine sound idea: Mario "Chrome" Prato
+
+Thanks to the Italian Zx Spectrum mailing-list for testing and suggestions
+on the original 4K Race
+
+
+LOADING INSTRUCTIONS
+
+The game has NOT been tested on a real machine, but on two of the most
+accurate emulators available, and those Spectrum emulators usually emulate
+the real machine faithfully.
+
+Do NOT run the game on a 48k Spectrum, or on a 128k Spectrum in 48k mode:
+it runs, but all graphics are distorted.
+
+If you have troubles running the game,
+
+* be sure that you are using/emulating a Spectrum 128k/+2/+3. Some 128k
+  clones may be good as well.
+* after a reset,  select TAPE LOADER at the starting menu
+* try to remove all additional hardware from your computer. The game does
+  not work with hardware such as microdrives, and others which like to write
+  on the floating bus...
+
+Be sure to turn the volume on!
+
+
+PREFACE
+
+This is an enhanced version of 4K race. The original game have been
+successful (thanks folks!) even if incomplete: strange prespective,
+all cars of the same size even if at different distances, etc...
+I thought that it was not possible to solve such problems in a 4k
+but, while working on a complete version of the game, I found out that
+it was possible. I never though I'd have ever used advanced programming
+tecniques such as dynamic compiling, expecially for the Spectrum!
+
+
+GAME DESCRIPTION
+
+As the title suggests, this is a racing game, similar to (oh well...)
+Outrun and Super Hang-On.
+
+The goal of the game is to reach the end of the track in the given time
+avoiding all the other cars. Checkpoints - there are 6 along the track - give
+you extra seconds. Time over = game over.
+
+At every game the track is different.
+
+
+Controls: Q = accelerate
+          A = brakes
+          O = turn left
+          P = turn right
+
+or Sinclair Joystick port 1.
+
+The upper part of the screen shows the score and high score, the part of
+the track in which you are, the time left, and the speed.
+
+
+I hope you will enjoy this minigame. I have spent a lot of hours on it.
+
+Comments and suggestions are welcome.
+
+
+REVISION HISTORY
+
+1.00 "4k race" for the Spectrum 128k
+     original game
+
+1.01 "4k race" for the ts/tc2068 (beta). Not working on the real machine.
+
+2.00 "4k race refueled" for the Spectrum 128k.
+     - Bigger cars
+     - Better prospective
+     - Visual is over car and not over the street any longer
+     - Faster to start
+     - Minor playability improvements
+
+2.01 "4k race refueled" for the Spectrum 128k.
+     - Fixed bug that freezes the game at the end of every game
+
+2.10 "4k race refueled+" for the ts/tc2068 (beta).
+     - Tested on the real TS 2068
+     - New introduction screen
+     - Better landscape
