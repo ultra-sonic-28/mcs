@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"log/slog"
+	"mcs/internal/config"
 	"mcs/internal/cpu/z80"
 	"mcs/internal/machine/spectrum/bus"
 	"mcs/internal/machine/spectrum/display"
@@ -69,6 +70,10 @@ type BaseMachine struct {
 	// Graphics
 	screenImage *ebiten.Image
 
+	// Border settings
+	borderWidth int
+	borderColor color.Color
+
 	// AutoStart state
 	autoStartEnabled bool
 	autoStartStep    int
@@ -95,12 +100,12 @@ type Machine128 struct {
 }
 
 // NewMachine creates and initializes a new Spectrum 48K machine.
-func NewMachine() *Machine48 {
+func NewMachine(cfg *config.Config) *Machine48 {
 	slog.Info("Creating Spectrum 48K Machine")
 	b := bus.NewBus48()
 	cpu := z80.NewCPU(b, b)
 
-	return &Machine48{
+	m := &Machine48{
 		BaseMachine: BaseMachine{
 			CPU:            cpu,
 			Bus:            b,
@@ -109,15 +114,17 @@ func NewMachine() *Machine48 {
 			CyclesPerFrame: CyclesPerFrame,
 		},
 	}
+	m.initBorder(cfg)
+	return m
 }
 
 // NewMachine128 creates and initializes a new Spectrum 128K machine.
-func NewMachine128() *Machine128 {
+func NewMachine128(cfg *config.Config) *Machine128 {
 	slog.Info("Creating Spectrum 128K Machine")
 	b := bus.NewBus128()
 	cpu := z80.NewCPU(b, b)
 
-	return &Machine128{
+	m := &Machine128{
 		BaseMachine: BaseMachine{
 			CPU:            cpu,
 			Bus:            b,
@@ -126,6 +133,47 @@ func NewMachine128() *Machine128 {
 			CyclesPerFrame: CyclesPerFrame128,
 		},
 	}
+	m.initBorder(cfg)
+	return m
+}
+
+// parseHexColor parses a hexadecimal color string (e.g., "#D6CDC9") and returns the corresponding color.RGBA.
+// If the parsing fails or the string is empty, it returns the provided fallback color.
+func parseHexColor(s string, fallback color.RGBA) color.RGBA {
+	if s == "" {
+		return fallback
+	}
+	if s[0] == '#' {
+		s = s[1:]
+	}
+	var r, g, b uint8
+	var a uint8 = 255
+	if len(s) == 6 {
+		n, err := fmt.Sscanf(s, "%02x%02x%02x", &r, &g, &b)
+		if err == nil && n == 3 {
+			return color.RGBA{R: r, G: g, B: b, A: a}
+		}
+	} else if len(s) == 8 {
+		n, err := fmt.Sscanf(s, "%02x%02x%02x%02x", &r, &g, &b, &a)
+		if err == nil && n == 4 {
+			return color.RGBA{R: r, G: g, B: b, A: a}
+		}
+	}
+	return fallback
+}
+
+// initBorder initializes the border dimensions and color from configuration.
+func (m *BaseMachine) initBorder(cfg *config.Config) {
+	if cfg == nil {
+		m.borderWidth = 0
+		m.borderColor = color.RGBA{R: 214, G: 205, B: 201, A: 255}
+		return
+	}
+	m.borderWidth = cfg.Display.Border.Width
+	if m.borderWidth < 0 {
+		m.borderWidth = 0
+	}
+	m.borderColor = parseHexColor(cfg.Display.Border.Color, color.RGBA{R: 214, G: 205, B: 201, A: 255})
 }
 
 // EnableAutoStart prepares the machine to automatically load and run the tape.
@@ -396,7 +444,9 @@ func (m *BaseMachine) initAudio() {
 func (m *BaseMachine) Run() error {
 	m.initAudio()
 	slog.Info("Setting Ebitengine UI")
-	ebiten.SetWindowSize(display.ScreenWidth*2, (display.ScreenHeight+StatusLineHeight)*2)
+	width := (display.ScreenWidth + 2*m.borderWidth) * 2
+	height := (display.ScreenHeight + StatusLineHeight + 2*m.borderWidth) * 2
+	ebiten.SetWindowSize(width, height)
 	ebiten.SetWindowTitle("MCS - Multi CPUs System")
 	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
 	slog.Info("Starting Spectrum Ebitengine loop")
@@ -411,8 +461,13 @@ func (m *BaseMachine) Update() error {
 }
 
 // Draw handles rendering.
+// Draw handles rendering.
 func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	m.Bus.GetDisplay().RenderFrame(m.Bus.GetDisplayMemory())
+
+	if m.borderWidth > 0 {
+		screen.Fill(m.borderColor)
+	}
 
 	// Draw Spectrum Screen
 	if m.screenImage == nil {
@@ -420,13 +475,16 @@ func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	}
 	m.screenImage.WritePixels(m.Bus.GetDisplay().FrameBuffer[:])
 	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(m.borderWidth), float64(m.borderWidth))
 	screen.DrawImage(m.screenImage, op)
 
 	// Draw Status Line Background (Dark grey)
-	statusRect := ebiten.NewImage(display.ScreenWidth, StatusLineHeight)
+	statusWidth := display.ScreenWidth + 2*m.borderWidth
+	statusRect := ebiten.NewImage(statusWidth, StatusLineHeight)
 	statusRect.Fill(color.RGBA{32, 32, 32, 255})
 	opRect := &ebiten.DrawImageOptions{}
-	opRect.GeoM.Translate(0, float64(display.ScreenHeight))
+	yPos := 2*m.borderWidth + display.ScreenHeight
+	opRect.GeoM.Translate(0, float64(yPos))
 	screen.DrawImage(statusRect, opRect)
 
 	// Draw Status Line Sections
@@ -440,29 +498,35 @@ func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	textColor := color.RGBA{200, 200, 200, 255}
 	sepColor := color.RGBA{100, 100, 100, 255}
 
-	// 1. Tape Section (50% = 128px)
-	// Each char is 6px wide (5px font + 1px space).
-	// 128 / 6 = 21 chars.
-	const maxTapeChars = 20
+	// Proportional sizing based on statusWidth
+	sep1X := statusWidth / 2
+	sep2X := statusWidth * 65 / 100
+
+	// 1. Tape Section
+	maxTapeChars := (sep1X - 10) / 6
+	if maxTapeChars < 5 {
+		maxTapeChars = 5
+	}
 	displayTapeName := tapeName
 	if len(displayTapeName) > maxTapeChars {
 		displayTapeName = displayTapeName[:maxTapeChars-3] + "..."
 	}
-	gui.DrawSmallText(screen, "|", 0, display.ScreenHeight+2, sepColor)
-	gui.DrawSmallText(screen, displayTapeName, 6, display.ScreenHeight+2, textColor)
+	gui.DrawSmallText(screen, displayTapeName, 6, yPos+2, textColor)
 
-	// 2. CPU Section (15% = 38px) -> starts at 128
-	// "Z80" is 18px wide. (38 - 18) / 2 = 10px offset.
-	gui.DrawSmallText(screen, "|", 128, display.ScreenHeight+2, sepColor)
-	gui.DrawSmallText(screen, "Z80", 128+10, display.ScreenHeight+2, textColor)
+	// Separator 1 (between Pane 1 and Pane 2)
+	gui.DrawSmallText(screen, "|", sep1X, yPos+2, sepColor)
 
-	// 3. Machine Section (35% = 90px) -> starts at 166 (128 + 38)
-	gui.DrawSmallText(screen, "|", 166, display.ScreenHeight+2, sepColor)
-	gui.DrawSmallText(screen, m.MachineName, 166+6, display.ScreenHeight+2, textColor)
-	gui.DrawSmallText(screen, "|", 255, display.ScreenHeight+2, sepColor)
+	// 2. CPU Section
+	gui.DrawSmallText(screen, "Z80", sep1X+10, yPos+2, textColor)
+
+	// Separator 2 (between Pane 2 and Pane 3)
+	gui.DrawSmallText(screen, "|", sep2X, yPos+2, sepColor)
+
+	// 3. Machine Section
+	gui.DrawSmallText(screen, m.MachineName, sep2X+6, yPos+2, textColor)
 }
 
 // Layout defines the screen dimensions.
 func (m *BaseMachine) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return display.ScreenWidth, display.ScreenHeight + StatusLineHeight
+	return display.ScreenWidth + 2*m.borderWidth, display.ScreenHeight + StatusLineHeight + 2*m.borderWidth
 }

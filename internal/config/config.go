@@ -6,10 +6,25 @@ import (
 	"os"
 )
 
+// BorderConfig holds configuration for the CRT-like display border.
+type BorderConfig struct {
+	// Color is the hexadecimal color code (e.g., "#D6CDC9") of the border.
+	Color string `json:"color"`
+	// Width is the thickness of the border in logical pixels.
+	Width int `json:"width"`
+}
+
+// DisplayConfig holds configuration for the emulator display settings.
+type DisplayConfig struct {
+	// Border defines the settings for the CRT-like screen border.
+	Border BorderConfig `json:"border"`
+}
+
 // Config represents the application configuration.
 type Config struct {
-	LoggingEnabled bool   `json:"logging_enabled"`
-	LogLevel       string `json:"log_level"`
+	LoggingEnabled bool          `json:"logging_enabled"`
+	LogLevel       string        `json:"log_level"`
+	Display        DisplayConfig `json:"display"`
 }
 
 // Load reads the configuration from the specified file path.
@@ -19,6 +34,12 @@ func Load(filePath string) (*Config, error) {
 	defaultCfg := &Config{
 		LoggingEnabled: false,
 		LogLevel:       "INFO",
+		Display: DisplayConfig{
+			Border: BorderConfig{
+				Color: "#D6EFC9",
+				Width: 15,
+			},
+		},
 	}
 
 	// Try to open the file

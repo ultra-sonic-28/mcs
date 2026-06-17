@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic tape name truncation with ellipsis (...) to fit the 50% width allocation.
 - `Filename` field to the `Tape` struct to store and display the loaded cassette's name.
 - Automatic layout adjustment to accommodate the new status line at the bottom of the screen.
+- Added support for a CRT-like screen border with configurable size (width in pixels) and hexadecimal color.
+- Added display configuration section to config structure, loading logic, and default values.
+- Added comprehensive unit tests for config parsing, border dimension scaling, invalid color handling, and negative boundary limits.
+- Adjusted status bar positioning to render below the bottom CRT display border.
+- Updated status bar layout to span the full window width dynamically based on the border configuration.
+- Removed vertical separators on the far-left and far-right of the status bar, keeping only the internal separators between panes.
 
 
 ## [0.0.1.21] - 2026-06-16

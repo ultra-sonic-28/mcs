@@ -54,7 +54,7 @@ func main() {
 	slog.Info("Starting MCS (Multi CPUs System)", "machine", *machineType)
 
 	if *machineType == "spectrum" || *machineType == "spectrum128" {
-		runSpectrum(*machineType, *tapePath)
+		runSpectrum(*machineType, *tapePath, cfg)
 		return
 	}
 
@@ -94,18 +94,18 @@ func main() {
 	slog.Info("MCS shutdown")
 }
 
-func runSpectrum(machineType string, tapePath string) {
+func runSpectrum(machineType string, tapePath string, cfg *config.Config) {
 	var m ebiten.Game
 	var bus machine.Bus
 	var autoStarter interface{ EnableAutoStart() }
 
 	if machineType == "spectrum128" {
-		m128 := machine.NewMachine128()
+		m128 := machine.NewMachine128(cfg)
 		m = m128
 		bus = m128.Bus
 		autoStarter = m128
 	} else {
-		m48 := machine.NewMachine()
+		m48 := machine.NewMachine(cfg)
 		m = m48
 		bus = m48.Bus
 		autoStarter = m48

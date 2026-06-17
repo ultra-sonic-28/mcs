@@ -1,4 +1,10 @@
 {
   "logging_enabled": true,
-  "log_level": "INFO"
+  "log_level": "INFO",
+  "display": {
+    "border": {
+      "color": "#D6EFC9",
+      "width": 15
+    }
+  }
 }
