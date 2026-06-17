@@ -38,5 +38,16 @@ var machineScenarios = []dsl.Scenario{
 		assert.True(t, "Total cycles should be >= 70908", m.CPU.Cycles >= 70908)
 		assert.True(t, "Total cycles should be close to 70908", m.CPU.Cycles < 70920)
 	}),
+	dsl.NewScenario("Machine metadata and layout", func(t *testing.T) {
+		m48 := NewMachine()
+		assert.Equal(t, "Machine 48K Name", m48.MachineName, "Spectrum 48K")
+		w, h := m48.Layout(0, 0)
+		assert.Equal(t, "Machine 48K Layout Height", h, 192+12)
 
+		m128 := NewMachine128()
+		assert.Equal(t, "Machine 128K Name", m128.MachineName, "Spectrum 128K")
+		w, h = m128.Layout(0, 0)
+		assert.Equal(t, "Machine 128K Layout Width", w, 256)
+		assert.Equal(t, "Machine 128K Layout Height", h, 192+12)
+	}),
 }

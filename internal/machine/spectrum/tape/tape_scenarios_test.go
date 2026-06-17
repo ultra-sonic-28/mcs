@@ -24,6 +24,7 @@ var tapeScenarios = []dsl.Scenario{
 		tape := NewTape()
 		err := tape.LoadTAP(filename)
 		assert.Equal(t, "LoadTAP error", err, nil)
+		assert.Equal(t, "Tape filename", tape.Filename, filename)
 		assert.Equal(t, "Block count", len(tape.Blocks), 2)
 		assert.Equal(t, "Block 1 length", len(tape.Blocks[0]), 3)
 		assert.Equal(t, "Block 2 length", len(tape.Blocks[1]), 2)

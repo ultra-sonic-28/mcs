@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added a status line in the machine emulator.
+- Refined status line with a custom 5x7 bitmap font for better readability at small scales.
+- Precise 3-part status bar layout: Tape Section (50%), CPU Section (15%), and Machine Section (35%).
+- Automatic tape name truncation with ellipsis (...) to fit the 50% width allocation.
+- `Filename` field to the `Tape` struct to store and display the loaded cassette's name.
+- Automatic layout adjustment to accommodate the new status line at the bottom of the screen.
+
+
 ## [0.0.1.21] - 2026-06-16
 
 ### Added

@@ -3,6 +3,7 @@ package machine
 
 import (
 	"fmt"
+	"image/color"
 	"log/slog"
 	"mcs/internal/cpu/z80"
 	"mcs/internal/machine/spectrum/bus"
@@ -11,12 +12,15 @@ import (
 	"mcs/internal/machine/spectrum/keyboard"
 	"mcs/internal/machine/spectrum/sound"
 	"mcs/internal/machine/spectrum/tape"
+	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 const (
+	// StatusLineHeight is the height of the status line in pixels.
+	StatusLineHeight = 12
 	// ProcessorClock is 3.5 MHz (Spectrum 48K)
 	ProcessorClock = 3500000
 	// ProcessorClock128 is 3.5469 MHz (Spectrum 128K)
@@ -59,6 +63,12 @@ type BaseMachine struct {
 	CPU *z80.CPU
 	Bus Bus
 
+	// Metadata
+	MachineName string
+
+	// Graphics
+	screenImage *ebiten.Image
+
 	// AutoStart state
 	autoStartEnabled bool
 	autoStartStep    int
@@ -94,6 +104,7 @@ func NewMachine() *Machine48 {
 		BaseMachine: BaseMachine{
 			CPU:            cpu,
 			Bus:            b,
+			MachineName:    "Spectrum 48K",
 			ClockRate:      ProcessorClock,
 			CyclesPerFrame: CyclesPerFrame,
 		},
@@ -110,6 +121,7 @@ func NewMachine128() *Machine128 {
 		BaseMachine: BaseMachine{
 			CPU:            cpu,
 			Bus:            b,
+			MachineName:    "Spectrum 128K",
 			ClockRate:      ProcessorClock128,
 			CyclesPerFrame: CyclesPerFrame128,
 		},
@@ -384,8 +396,8 @@ func (m *BaseMachine) initAudio() {
 func (m *BaseMachine) Run() error {
 	m.initAudio()
 	slog.Info("Setting Ebitengine UI")
-	ebiten.SetWindowSize(display.ScreenWidth*2, display.ScreenHeight*2)
-	ebiten.SetWindowTitle("MCS - ZX Spectrum")
+	ebiten.SetWindowSize(display.ScreenWidth*2, (display.ScreenHeight+StatusLineHeight)*2)
+	ebiten.SetWindowTitle("MCS - Multi CPUs System")
 	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
 	slog.Info("Starting Spectrum Ebitengine loop")
 	return ebiten.RunGame(m)
@@ -401,10 +413,56 @@ func (m *BaseMachine) Update() error {
 // Draw handles rendering.
 func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	m.Bus.GetDisplay().RenderFrame(m.Bus.GetDisplayMemory())
-	screen.WritePixels(m.Bus.GetDisplay().FrameBuffer[:])
+
+	// Draw Spectrum Screen
+	if m.screenImage == nil {
+		m.screenImage = ebiten.NewImage(display.ScreenWidth, display.ScreenHeight)
+	}
+	m.screenImage.WritePixels(m.Bus.GetDisplay().FrameBuffer[:])
+	op := &ebiten.DrawImageOptions{}
+	screen.DrawImage(m.screenImage, op)
+
+	// Draw Status Line Background (Dark grey)
+	statusRect := ebiten.NewImage(display.ScreenWidth, StatusLineHeight)
+	statusRect.Fill(color.RGBA{32, 32, 32, 255})
+	opRect := &ebiten.DrawImageOptions{}
+	opRect.GeoM.Translate(0, float64(display.ScreenHeight))
+	screen.DrawImage(statusRect, opRect)
+
+	// Draw Status Line Sections
+	t := m.Bus.GetTape()
+	tapeName := "No tape"
+	if t.Filename != "" {
+		tapeName = filepath.Base(t.Filename)
+	}
+
+	// Colors
+	textColor := color.RGBA{200, 200, 200, 255}
+	sepColor := color.RGBA{100, 100, 100, 255}
+
+	// 1. Tape Section (50% = 128px)
+	// Each char is 6px wide (5px font + 1px space).
+	// 128 / 6 = 21 chars.
+	const maxTapeChars = 20
+	displayTapeName := tapeName
+	if len(displayTapeName) > maxTapeChars {
+		displayTapeName = displayTapeName[:maxTapeChars-3] + "..."
+	}
+	gui.DrawSmallText(screen, "|", 0, display.ScreenHeight+2, sepColor)
+	gui.DrawSmallText(screen, displayTapeName, 6, display.ScreenHeight+2, textColor)
+
+	// 2. CPU Section (15% = 38px) -> starts at 128
+	// "Z80" is 18px wide. (38 - 18) / 2 = 10px offset.
+	gui.DrawSmallText(screen, "|", 128, display.ScreenHeight+2, sepColor)
+	gui.DrawSmallText(screen, "Z80", 128+10, display.ScreenHeight+2, textColor)
+
+	// 3. Machine Section (35% = 90px) -> starts at 166 (128 + 38)
+	gui.DrawSmallText(screen, "|", 166, display.ScreenHeight+2, sepColor)
+	gui.DrawSmallText(screen, m.MachineName, 166+6, display.ScreenHeight+2, textColor)
+	gui.DrawSmallText(screen, "|", 255, display.ScreenHeight+2, sepColor)
 }
 
 // Layout defines the screen dimensions.
 func (m *BaseMachine) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return display.ScreenWidth, display.ScreenHeight
+	return display.ScreenWidth, display.ScreenHeight + StatusLineHeight
 }

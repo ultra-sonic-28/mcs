@@ -22,7 +22,8 @@ const (
 
 // Tape handles the loading and playback of .tap cassette files.
 type Tape struct {
-	Blocks [][]byte
+	Filename string
+	Blocks   [][]byte
 
 	// Playback state
 	Active        bool
@@ -48,6 +49,7 @@ func (t *Tape) LoadTAP(filename string) error {
 		return err
 	}
 
+	t.Filename = filename
 	t.Blocks = nil
 	for i := 0; i < len(data); {
 		if i+2 > len(data) {
