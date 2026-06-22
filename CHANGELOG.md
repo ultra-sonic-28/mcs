@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adjusted machine layout and status line positioning to dynamically shift downwards based on the toolbar's height.
 - Added unit tests for the toolbar component, config loading verification, and layout adjustments.
 - Updated default configuration file `config.json` with toolbar settings.
+- Added a reusable `Button` component with configurable width, height, and bitmap icon, supporting hover and press visual states and an `onClick` callback.
+- Added unit tests for the `Button` component covering dimension clamping, position setting, nil bitmap handling, and callback storage.
 
 ### Fixed
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.
