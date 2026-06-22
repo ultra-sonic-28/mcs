@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adjusted status bar positioning to render below the bottom CRT display border.
 - Updated status bar layout to span the full window width dynamically based on the border configuration.
 - Removed vertical separators on the far-left and far-right of the status bar, keeping only the internal separators between panes.
+- Added a configurable top toolbar component with adjustable height and background color.
+- Updated display configuration structure and default config values to support toolbar settings.
+- Integrated the toolbar component into the ZX Spectrum machine emulator, drawing it above the top border.
+- Adjusted machine layout and status line positioning to dynamically shift downwards based on the toolbar's height.
+- Added unit tests for the toolbar component, config loading verification, and layout adjustments.
+- Updated default configuration file `config.json` with toolbar settings.
+
+### Fixed
+- Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.
 
 
 ## [0.0.1.21] - 2026-06-16

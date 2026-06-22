@@ -106,5 +106,29 @@ var machineScenarios = []dsl.Scenario{
 		m3 := NewMachine(cfgNeg)
 		assert.Equal(t, "Negative border width clamped to 0", m3.borderWidth, 0)
 	}),
+	dsl.NewScenario("Machine layout with toolbar config", func(t *testing.T) {
+		cfg := &config.Config{
+			Display: config.DisplayConfig{
+				Border: config.BorderConfig{
+					Color: "#FF0000",
+					Width: 10,
+				},
+				Toolbar: config.ToolbarConfig{
+					Color:  "#D6CDC9",
+					Height: 25,
+				},
+			},
+		}
+		m := NewMachine(cfg)
+		assert.Equal(t, "Border width", m.borderWidth, 10)
+		assert.NotEqual(t, "Toolbar is not nil", m.toolbar, nil)
+		assert.Equal(t, "Toolbar height", m.toolbar.Height(), 25)
+
+		w, h := m.Layout(0, 0)
+		// ScreenWidth (256) + 2*10 = 276
+		assert.Equal(t, "Layout Width", w, 276)
+		// ScreenHeight (192) + StatusLineHeight (12) + 2*10 + 25 = 249
+		assert.Equal(t, "Layout Height", h, 249)
+	}),
 }
 

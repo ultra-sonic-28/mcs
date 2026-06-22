@@ -20,8 +20,10 @@ var configScenarios = []dsl.Scenario{
 		assert.Equal(t, "Load error should be nil", err, nil)
 		assert.Equal(t, "LoggingEnabled default", cfg.LoggingEnabled, false)
 		assert.Equal(t, "LogLevel default", cfg.LogLevel, "INFO")
-		assert.Equal(t, "Border Color default", cfg.Display.Border.Color, "#D6CDC9")
-		assert.Equal(t, "Border Width default", cfg.Display.Border.Width, 0)
+		assert.Equal(t, "Border Color default", cfg.Display.Border.Color, "#D6EFC9")
+		assert.Equal(t, "Border Width default", cfg.Display.Border.Width, 15)
+		assert.Equal(t, "Toolbar Color default", cfg.Display.Toolbar.Color, "#D6CDC9")
+		assert.Equal(t, "Toolbar Height default", cfg.Display.Toolbar.Height, 20)
 
 		// Verify the file was created on disk
 		_, err = os.Stat(configPath)
@@ -40,6 +42,10 @@ var configScenarios = []dsl.Scenario{
 					Color: "#FF0000",
 					Width: 30,
 				},
+				Toolbar: ToolbarConfig{
+					Color:  "#00FF00",
+					Height: 15,
+				},
 			},
 		}
 
@@ -55,5 +61,7 @@ var configScenarios = []dsl.Scenario{
 		assert.Equal(t, "LogLevel", cfg.LogLevel, "DEBUG")
 		assert.Equal(t, "Border Color", cfg.Display.Border.Color, "#FF0000")
 		assert.Equal(t, "Border Width", cfg.Display.Border.Width, 30)
+		assert.Equal(t, "Toolbar Color", cfg.Display.Toolbar.Color, "#00FF00")
+		assert.Equal(t, "Toolbar Height", cfg.Display.Toolbar.Height, 15)
 	}),
 }

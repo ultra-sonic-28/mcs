@@ -5,6 +5,10 @@
     "border": {
       "color": "#D6EFC9",
       "width": 15
+    },
+    "toolbar": {
+      "color": "#D6CDC9",
+      "height": 20
     }
   }
 }

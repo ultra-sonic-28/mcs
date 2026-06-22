@@ -13,6 +13,7 @@ import (
 	"mcs/internal/machine/spectrum/keyboard"
 	"mcs/internal/machine/spectrum/sound"
 	"mcs/internal/machine/spectrum/tape"
+	"mcs/internal/ui/components"
 	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -74,6 +75,9 @@ type BaseMachine struct {
 	borderWidth int
 	borderColor color.Color
 
+	// UI Components
+	toolbar *components.Toolbar
+
 	// AutoStart state
 	autoStartEnabled bool
 	autoStartStep    int
@@ -115,6 +119,7 @@ func NewMachine(cfg *config.Config) *Machine48 {
 		},
 	}
 	m.initBorder(cfg)
+	m.initToolbar(cfg)
 	return m
 }
 
@@ -134,6 +139,7 @@ func NewMachine128(cfg *config.Config) *Machine128 {
 		},
 	}
 	m.initBorder(cfg)
+	m.initToolbar(cfg)
 	return m
 }
 
@@ -174,6 +180,15 @@ func (m *BaseMachine) initBorder(cfg *config.Config) {
 		m.borderWidth = 0
 	}
 	m.borderColor = parseHexColor(cfg.Display.Border.Color, color.RGBA{R: 214, G: 205, B: 201, A: 255})
+}
+
+// initToolbar initializes the toolbar component from configuration.
+func (m *BaseMachine) initToolbar(cfg *config.Config) {
+	if cfg == nil {
+		m.toolbar = components.NewToolbar(0, "")
+		return
+	}
+	m.toolbar = components.NewToolbar(cfg.Display.Toolbar.Height, cfg.Display.Toolbar.Color)
 }
 
 // EnableAutoStart prepares the machine to automatically load and run the tape.
@@ -444,8 +459,12 @@ func (m *BaseMachine) initAudio() {
 func (m *BaseMachine) Run() error {
 	m.initAudio()
 	slog.Info("Setting Ebitengine UI")
+	th := 0
+	if m.toolbar != nil {
+		th = m.toolbar.Height()
+	}
 	width := (display.ScreenWidth + 2*m.borderWidth) * 2
-	height := (display.ScreenHeight + StatusLineHeight + 2*m.borderWidth) * 2
+	height := (display.ScreenHeight + StatusLineHeight + 2*m.borderWidth + th) * 2
 	ebiten.SetWindowSize(width, height)
 	ebiten.SetWindowTitle("MCS - Multi CPUs System")
 	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
@@ -461,12 +480,16 @@ func (m *BaseMachine) Update() error {
 }
 
 // Draw handles rendering.
-// Draw handles rendering.
 func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	m.Bus.GetDisplay().RenderFrame(m.Bus.GetDisplayMemory())
 
 	if m.borderWidth > 0 {
 		screen.Fill(m.borderColor)
+	}
+
+	th := 0
+	if m.toolbar != nil {
+		th = m.toolbar.Height()
 	}
 
 	// Draw Spectrum Screen
@@ -475,7 +498,7 @@ func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	}
 	m.screenImage.WritePixels(m.Bus.GetDisplay().FrameBuffer[:])
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(m.borderWidth), float64(m.borderWidth))
+	op.GeoM.Translate(float64(m.borderWidth), float64(th+m.borderWidth))
 	screen.DrawImage(m.screenImage, op)
 
 	// Draw Status Line Background (Dark grey)
@@ -483,7 +506,7 @@ func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	statusRect := ebiten.NewImage(statusWidth, StatusLineHeight)
 	statusRect.Fill(color.RGBA{32, 32, 32, 255})
 	opRect := &ebiten.DrawImageOptions{}
-	yPos := 2*m.borderWidth + display.ScreenHeight
+	yPos := th + 2*m.borderWidth + display.ScreenHeight
 	opRect.GeoM.Translate(0, float64(yPos))
 	screen.DrawImage(statusRect, opRect)
 
@@ -524,9 +547,18 @@ func (m *BaseMachine) Draw(screen *ebiten.Image) {
 
 	// 3. Machine Section
 	gui.DrawSmallText(screen, m.MachineName, sep2X+6, yPos+2, textColor)
+
+	// Draw toolbar on top
+	if m.toolbar != nil {
+		m.toolbar.Draw(screen)
+	}
 }
 
 // Layout defines the screen dimensions.
 func (m *BaseMachine) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return display.ScreenWidth + 2*m.borderWidth, display.ScreenHeight + StatusLineHeight + 2*m.borderWidth
+	th := 0
+	if m.toolbar != nil {
+		th = m.toolbar.Height()
+	}
+	return display.ScreenWidth + 2*m.borderWidth, display.ScreenHeight + StatusLineHeight + 2*m.borderWidth + th
 }

@@ -14,10 +14,20 @@ type BorderConfig struct {
 	Width int `json:"width"`
 }
 
+// ToolbarConfig holds configuration for the top toolbar.
+type ToolbarConfig struct {
+	// Color is the hexadecimal color code (e.g., "#D6CDC9") of the toolbar.
+	Color string `json:"color"`
+	// Height is the height of the toolbar in logical pixels.
+	Height int `json:"height"`
+}
+
 // DisplayConfig holds configuration for the emulator display settings.
 type DisplayConfig struct {
 	// Border defines the settings for the CRT-like screen border.
 	Border BorderConfig `json:"border"`
+	// Toolbar defines the settings for the top toolbar.
+	Toolbar ToolbarConfig `json:"toolbar"`
 }
 
 // Config represents the application configuration.
@@ -38,6 +48,10 @@ func Load(filePath string) (*Config, error) {
 			Border: BorderConfig{
 				Color: "#D6EFC9",
 				Width: 15,
+			},
+			Toolbar: ToolbarConfig{
+				Color:  "#D6CDC9",
+				Height: 20,
 			},
 		},
 	}
