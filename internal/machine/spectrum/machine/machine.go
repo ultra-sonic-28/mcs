@@ -106,7 +106,7 @@ type Machine128 struct {
 }
 
 // NewMachine creates and initializes a new Spectrum 48K machine.
-func NewMachine(cfg *config.Config) *Machine48 {
+func NewMachine(_cfg *config.Config) *Machine48 {
 	slog.Info("Creating Spectrum 48K Machine")
 	b := bus.NewBus48()
 	cpu := z80.NewCPU(b, b)
@@ -120,13 +120,11 @@ func NewMachine(cfg *config.Config) *Machine48 {
 			CyclesPerFrame: CyclesPerFrame,
 		},
 	}
-	m.initBorder(cfg)
-	m.initToolbar(cfg)
 	return m
 }
 
 // NewMachine128 creates and initializes a new Spectrum 128K machine.
-func NewMachine128(cfg *config.Config) *Machine128 {
+func NewMachine128(_cfg *config.Config) *Machine128 {
 	slog.Info("Creating Spectrum 128K Machine")
 	b := bus.NewBus128()
 	cpu := z80.NewCPU(b, b)
@@ -140,8 +138,6 @@ func NewMachine128(cfg *config.Config) *Machine128 {
 			CyclesPerFrame: CyclesPerFrame128,
 		},
 	}
-	m.initBorder(cfg)
-	m.initToolbar(cfg)
 	return m
 }
 
@@ -172,6 +168,7 @@ func parseHexColor(s string, fallback color.RGBA) color.RGBA {
 
 // initBorder initializes the border dimensions and color from configuration.
 func (m *BaseMachine) initBorder(cfg *config.Config) {
+	slog.Info("Initializing border")
 	if cfg == nil {
 		m.borderWidth = 0
 		m.borderColor = color.RGBA{R: 214, G: 205, B: 201, A: 255}
@@ -491,9 +488,13 @@ func (m *BaseMachine) initAudio() {
 }
 
 // Run executes the machine using Ebitengine.
-func (m *BaseMachine) Run() error {
+func (m *BaseMachine) Run(cfg *config.Config) error {
 	m.initAudio()
 	slog.Info("Setting Ebitengine UI")
+
+	m.initBorder(cfg)
+	m.initToolbar(cfg)
+
 	th := 0
 	if m.toolbar != nil {
 		th = m.toolbar.Height()

@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.
 
+### Changed
+- Some refactor around border and toolbar initialisation.
 
 ## [0.0.1.21] - 2026-06-16
 

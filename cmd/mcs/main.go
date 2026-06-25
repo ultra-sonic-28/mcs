@@ -124,11 +124,11 @@ func runSpectrum(machineType string, tapePath string, cfg *config.Config) {
 	}
 
 	type Runner interface {
-		Run() error
+		Run(cfg *config.Config) error
 	}
 
 	if r, ok := m.(Runner); ok {
-		if err := r.Run(); err != nil {
+		if err := r.Run(cfg); err != nil {
 			slog.Error("⚠️ machine error", "error", err)
 			os.Exit(1)
 		}
