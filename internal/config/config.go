@@ -24,6 +24,8 @@ type ToolbarConfig struct {
 
 // DisplayConfig holds configuration for the emulator display settings.
 type DisplayConfig struct {
+	// Scale is the scaling factor for the display.
+	Scale int `json:"scale"`
 	// Border defines the settings for the CRT-like screen border.
 	Border BorderConfig `json:"border"`
 	// Toolbar defines the settings for the top toolbar.
@@ -53,6 +55,7 @@ func Load(filePath string) (*Config, error) {
 				Color:  "#D6CDC9",
 				Height: 20,
 			},
+			Scale: 2,
 		},
 	}
 

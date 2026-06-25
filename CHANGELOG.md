@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `assets/ui/toolbar/assets.go` to embed toolbar icon assets (`quit-app.png`) into the binary at compile time.
 - Added a Quit button to the toolbar using the embedded `quit-app.png` icon; clicking it terminates the MCS emulator via `Shutdown`.
 - Forwarded `toolbar.Update` in the machine `Update` loop so toolbar button click events are processed each frame.
+- Added scale configuration in the display section of `config.json`. Added loading logic and default values.
 
 ### Fixed
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.

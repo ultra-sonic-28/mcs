@@ -2,6 +2,7 @@
   "logging_enabled": true,
   "log_level": "INFO",
   "display": {
+    "scale": 2,
     "border": {
       "color": "#D6EFC9",
       "width": 15

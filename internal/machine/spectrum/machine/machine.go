@@ -499,8 +499,10 @@ func (m *BaseMachine) Run(cfg *config.Config) error {
 	if m.toolbar != nil {
 		th = m.toolbar.Height()
 	}
-	width := (display.ScreenWidth + 2*m.borderWidth) * 2
-	height := (display.ScreenHeight + StatusLineHeight + 2*m.borderWidth + th) * 2
+
+	slog.Info("Setting scale factor", "scale", cfg.Display.Scale)
+	width := (display.ScreenWidth + 2*m.borderWidth) * cfg.Display.Scale
+	height := (display.ScreenHeight + StatusLineHeight + 2*m.borderWidth + th) * cfg.Display.Scale
 	ebiten.SetWindowSize(width, height)
 	ebiten.SetWindowTitle("MCS - Multi CPUs System")
 	ebiten.SetTPS(FramesPerSecond) // Set to 50 TPS for Spectrum
