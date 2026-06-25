@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"log/slog"
+	toolbarassets "mcs/assets/ui/toolbar"
 	"mcs/internal/config"
 	"mcs/internal/cpu/z80"
 	"mcs/internal/machine/spectrum/bus"
@@ -14,6 +15,7 @@ import (
 	"mcs/internal/machine/spectrum/sound"
 	"mcs/internal/machine/spectrum/tape"
 	"mcs/internal/ui/components"
+	"os"
 	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -182,13 +184,46 @@ func (m *BaseMachine) initBorder(cfg *config.Config) {
 	m.borderColor = parseHexColor(cfg.Display.Border.Color, color.RGBA{R: 214, G: 205, B: 201, A: 255})
 }
 
-// initToolbar initializes the toolbar component from configuration.
+// initToolbar initializes the toolbar component from configuration and registers
+// the built-in toolbar buttons.
 func (m *BaseMachine) initToolbar(cfg *config.Config) {
+	slog.Info("Initializing toolbar")
 	if cfg == nil {
 		m.toolbar = components.NewToolbar(0, "")
 		return
 	}
-	m.toolbar = components.NewToolbar(cfg.Display.Toolbar.Height, cfg.Display.Toolbar.Color)
+	tb := components.NewToolbar(cfg.Display.Toolbar.Height, cfg.Display.Toolbar.Color)
+
+	// --- Quit button ---
+	slog.Info("Adding Quit button to toolbar")
+	quitBtn, err := components.NewButtonFromImageData(
+		toolbarassets.QuitApp,
+		tb.Height()-4,
+		func() {
+			slog.Debug("Quit button pressed – terminating MCS")
+			m.Shutdown()
+			os.Exit(0)
+		},
+	)
+	if err != nil {
+		slog.Error("Failed to load quit button image", "error", err)
+	} else {
+		tb.AddButton(quitBtn)
+	}
+
+	m.toolbar = tb
+}
+
+// Shutdown performs a clean shutdown of machine resources (audio, players, ...).
+func (m *BaseMachine) Shutdown() {
+	slog.Info("Machine shutdown: stopping audio and releasing resources")
+	if m.audioPlayer != nil {
+		// Close stops the player and releases resources.
+		_ = m.audioPlayer.Close()
+		m.audioPlayer = nil
+	}
+	// audio.Context has no Close method; set to nil to allow GC.
+	m.audioContext = nil
 }
 
 // EnableAutoStart prepares the machine to automatically load and run the tape.
@@ -474,6 +509,9 @@ func (m *BaseMachine) Run() error {
 
 // Update handles logical state changes.
 func (m *BaseMachine) Update() error {
+	if m.toolbar != nil {
+		m.toolbar.Update()
+	}
 	m.UpdateKeyboard()
 	m.RunFrame()
 	return nil

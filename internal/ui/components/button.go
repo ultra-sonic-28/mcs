@@ -2,7 +2,10 @@
 package components
 
 import (
+	"bytes"
+	"image"
 	"image/color"
+	_ "image/png" // register PNG decoder
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -23,6 +26,8 @@ type Button struct {
 	Height int
 	// bitmap is the monochrome icon to draw inside the button.
 	bitmap Bitmap
+	// iconImage is the original PNG image rendered for image-based buttons.
+	iconImage *ebiten.Image
 
 	// x and y are the top-left position of the button on the screen.
 	x, y int
@@ -47,6 +52,42 @@ func NewButton(width, height int, bitmap Bitmap, onClick func()) *Button {
 		bitmap:  bitmap,
 		onClick: onClick,
 	}
+}
+
+// NewButtonFromImageData decodes a PNG from raw bytes and builds a Button whose
+// size matches the image dimensions. If the image height exceeds maxHeight, the
+// button is scaled proportionally so that its height equals maxHeight.
+//
+// The image is converted to a monochrome Bitmap: any pixel whose alpha channel
+// is >= 128 and luminance < 128 is treated as a foreground (true) pixel.
+// Returns nil and an error if the PNG data cannot be decoded.
+func NewButtonFromImageData(pngData []byte, maxHeight int, onClick func()) (*Button, error) {
+	img, _, err := image.Decode(bytes.NewReader(pngData))
+	if err != nil {
+		return nil, err
+	}
+	return newButtonFromImage(img, maxHeight, onClick), nil
+}
+
+// newButtonFromImage converts an image.Image to a Button, scaling it if needed.
+func newButtonFromImage(img image.Image, maxHeight int, onClick func()) *Button {
+	bounds := img.Bounds()
+	srcW := bounds.Dx()
+	srcH := bounds.Dy()
+
+	// Scale proportionally when the image is taller than the allowed height.
+	dstW, dstH := srcW, srcH
+	if maxHeight > 0 && srcH > maxHeight {
+		dstH = maxHeight
+		dstW = srcW * maxHeight / srcH
+		if dstW < 1 {
+			dstW = 1
+		}
+	}
+
+	b := NewButton(dstW, dstH, nil, onClick)
+	b.iconImage = ebiten.NewImageFromImage(img)
+	return b
 }
 
 // SetPosition sets the top-left position of the button on the screen.
@@ -76,7 +117,7 @@ func (b *Button) Update() {
 // Visual states:
 //   - Normal:   dark gray  (#3A3A3A)
 //   - Hovered:  medium gray (#5A5A5A)
-//   - Pressed:  light gray  (#2A2A2A)
+//   - Pressed:  very dark gray (#2A2A2A)
 func (b *Button) Draw(screen *ebiten.Image) {
 	// --- Background color by state ---
 	bg := color.RGBA{R: 58, G: 58, B: 58, A: 255} // normal
@@ -93,7 +134,25 @@ func (b *Button) Draw(screen *ebiten.Image) {
 	btnImg.Fill(bg)
 
 	// --- Draw bitmap icon centered ---
-	if len(b.bitmap) > 0 {
+	if b.iconImage != nil {
+		srcW, srcH := b.iconImage.Bounds().Dx(), b.iconImage.Bounds().Dy()
+		scale := 1.0
+		if srcW > 0 && srcH > 0 {
+			scale = float64(b.Width) / float64(srcW)
+			if float64(b.Height)/float64(srcH) < scale {
+				scale = float64(b.Height) / float64(srcH)
+			}
+			if scale > 1 {
+				scale = 1
+			}
+		}
+		offX := (b.Width - int(float64(srcW)*scale)) / 2
+		offY := (b.Height - int(float64(srcH)*scale)) / 2
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(scale, scale)
+		op.GeoM.Translate(float64(offX), float64(offY))
+		btnImg.DrawImage(b.iconImage, op)
+	} else if len(b.bitmap) > 0 {
 		iconH := len(b.bitmap)
 		iconW := 0
 		if iconH > 0 {

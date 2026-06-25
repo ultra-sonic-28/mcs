@@ -68,6 +68,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## Attributions
 ### Icons / Images
 - <a href="https://www.flaticon.com/free-icons/ram" title="ram icons">Ram icons created by Smashicons - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/shutdown" title="shutdown icons">Shutdown icons created by Fathema Khanom - Flaticon</a>
 
 ### Tapes
 | Type | Title / Link  | Machine | Status | Comments |

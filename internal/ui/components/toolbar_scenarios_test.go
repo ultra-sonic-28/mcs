@@ -36,4 +36,29 @@ var toolbarScenarios = []dsl.Scenario{
 		tb := NewToolbar(-5, "#00FF00")
 		assert.Equal(t, "Negative toolbar height clamped to 0", tb.Height(), 0)
 	}),
+	dsl.NewScenario("AddButton registers button in toolbar", func(t *testing.T) {
+		tb := NewToolbar(20, "#D6CDC9")
+		assert.Equal(t, "No buttons initially", len(tb.buttons), 0)
+		btn := NewButton(16, 16, nil, nil)
+		tb.AddButton(btn)
+		assert.Equal(t, "One button after AddButton", len(tb.buttons), 1)
+	}),
+	dsl.NewScenario("Button is positioned by toolbar layout", func(t *testing.T) {
+		tb := NewToolbar(20, "#D6CDC9")
+		btn := NewButton(16, 16, nil, nil)
+		tb.AddButton(btn)
+		// x = buttonPadding = 2; y = (20-16)/2 = 2
+		assert.Equal(t, "Button X position", btn.x, buttonPadding)
+		assert.Equal(t, "Button Y centred", btn.y, (20-16)/2)
+	}),
+	dsl.NewScenario("Multiple buttons are laid out left-to-right", func(t *testing.T) {
+		tb := NewToolbar(20, "#D6CDC9")
+		btn1 := NewButton(16, 16, nil, nil)
+		btn2 := NewButton(16, 16, nil, nil)
+		tb.AddButton(btn1)
+		tb.AddButton(btn2)
+		// btn1: x=2; btn2: x=2+16+2=20
+		assert.Equal(t, "Button 1 X", btn1.x, buttonPadding)
+		assert.Equal(t, "Button 2 X", btn2.x, buttonPadding+16+buttonPadding)
+	}),
 }

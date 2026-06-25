@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated default configuration file `config.json` with toolbar settings.
 - Added a reusable `Button` component with configurable width, height, and bitmap icon, supporting hover and press visual states and an `onClick` callback.
 - Added unit tests for the `Button` component covering dimension clamping, position setting, nil bitmap handling, and callback storage.
+- Added `NewButtonFromImageData` constructor to `Button` that decodes a PNG from raw bytes, converts it to a monochrome `Bitmap` using luminance thresholding, and scales it proportionally when the image height exceeds a configurable maximum.
+- Added `AddButton` and `Update` methods to `Toolbar` so it owns and lays out its child buttons left-to-right, centred vertically.
+- Added `assets/ui/toolbar/assets.go` to embed toolbar icon assets (`quit-app.png`) into the binary at compile time.
+- Added a Quit button to the toolbar using the embedded `quit-app.png` icon; clicking it terminates the MCS emulator via `Shutdown`.
+- Forwarded `toolbar.Update` in the machine `Update` loop so toolbar button click events are processed each frame.
 
 ### Fixed
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.

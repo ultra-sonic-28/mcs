@@ -8,10 +8,16 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// buttonPadding is the horizontal gap between buttons and between the toolbar
+// edge and the first button, in logical pixels.
+const buttonPadding = 2
+
 // Toolbar represents a configurable toolbar UI component.
+// It owns a list of Button components that are laid out left-to-right.
 type Toolbar struct {
-	height int
-	color  color.Color
+	height  int
+	color   color.Color
+	buttons []*Button
 }
 
 // NewToolbar creates a new Toolbar component with the given height and color string.
@@ -23,8 +29,9 @@ func NewToolbar(height int, hexColor string) *Toolbar {
 		height = 0
 	}
 	return &Toolbar{
-		height: height,
-		color:  c,
+		height:  height,
+		color:   c,
+		buttons: make([]*Button, 0),
 	}
 }
 
@@ -33,18 +40,53 @@ func (t *Toolbar) Height() int {
 	return t.height
 }
 
-// Draw renders the toolbar on the target image.
+// AddButton appends a button to the toolbar.
+// Buttons are drawn left-to-right in the order they are added.
+func (t *Toolbar) AddButton(b *Button) {
+	t.buttons = append(t.buttons, b)
+	t.layoutButtons()
+}
+
+// layoutButtons recalculates each button's position so they are centred
+// vertically and packed left-to-right with buttonPadding gaps.
+func (t *Toolbar) layoutButtons() {
+	x := buttonPadding
+	for _, b := range t.buttons {
+		// Centre vertically within the toolbar.
+		y := (t.height - b.Height) / 2
+		if y < 0 {
+			y = 0
+		}
+		b.SetPosition(x, y)
+		x += b.Width + buttonPadding
+	}
+}
+
+// Update forwards input events to all buttons in the toolbar.
+// Must be called from the Ebitengine Update loop.
+func (t *Toolbar) Update() {
+	for _, b := range t.buttons {
+		b.Update()
+	}
+}
+
+// Draw renders the toolbar background and all its buttons on the target image.
 func (t *Toolbar) Draw(screen *ebiten.Image) {
 	if t.height <= 0 {
 		return
 	}
-	// The toolbar is drawn at the top (y = 0 to y = height)
+	// Draw toolbar background spanning the full screen width.
 	w := screen.Bounds().Dx()
 	rectImg := ebiten.NewImage(w, t.height)
 	rectImg.Fill(t.color)
 
 	op := &ebiten.DrawImageOptions{}
 	screen.DrawImage(rectImg, op)
+
+	// Draw buttons on top of the background.
+	for _, b := range t.buttons {
+		b.Draw(screen)
+	}
 }
 
 // parseHexColor parses a hexadecimal color string (e.g., "#D6CDC9") and returns the corresponding color.RGBA.

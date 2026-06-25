@@ -2,6 +2,7 @@
 package components
 
 import (
+	toolbarassets "mcs/assets/ui/toolbar"
 	"mcs/testutils/assert"
 	"mcs/testutils/dsl"
 	"testing"
@@ -52,5 +53,25 @@ var buttonScenarios = []dsl.Scenario{
 		assert.Equal(t, "callback not yet called", called, false)
 		// Verify the function reference is stored (not nil)
 		assert.True(t, "callback is not nil", btn.onClick != nil)
+	}),
+	dsl.NewScenario("NewButtonFromImageData decodes valid PNG without error", func(t *testing.T) {
+		btn, err := NewButtonFromImageData(toolbarassets.QuitApp, 20, nil)
+		assert.Equal(t, "No decode error", err, nil)
+		assert.True(t, "Button is not nil", btn != nil)
+		// The quit-app.png is 16x16; maxHeight=20 means no scaling, so width=16 height=16.
+		assert.True(t, "Width > 0", btn.Width > 0)
+		assert.True(t, "Height <= 20", btn.Height <= 20)
+	}),
+	dsl.NewScenario("NewButtonFromImageData scales button when image taller than maxHeight", func(t *testing.T) {
+		// quit-app.png is 16×16; maxHeight=8 should scale it to 8×8.
+		btn, err := NewButtonFromImageData(toolbarassets.QuitApp, 8, nil)
+		assert.Equal(t, "No decode error", err, nil)
+		assert.True(t, "Button is not nil", btn != nil)
+		assert.Equal(t, "Height capped at maxHeight", btn.Height, 8)
+	}),
+	dsl.NewScenario("NewButtonFromImageData returns error on invalid PNG data", func(t *testing.T) {
+		btn, err := NewButtonFromImageData([]byte("not a png"), 20, nil)
+		assert.True(t, "Error is returned", err != nil)
+		assert.True(t, "Button is nil on error", btn == nil)
 	}),
 }
