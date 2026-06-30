@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added DSL-based unit tests for the ZX Spectrum GUI module (`internal/machine/spectrum/gui`), covering key map mappings, font map validation, and text drawing safety checks.
 - Added a status line in the machine emulator.
 - Refined status line with a custom 5x7 bitmap font for better readability at small scales.
 - Precise 3-part status bar layout: Tape Section (50%), CPU Section (15%), and Machine Section (35%).
