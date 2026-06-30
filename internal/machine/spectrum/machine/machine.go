@@ -16,7 +16,6 @@ import (
 	"mcs/internal/machine/spectrum/tape"
 	"mcs/internal/ui/components"
 	"os"
-	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
@@ -78,7 +77,8 @@ type BaseMachine struct {
 	borderColor color.Color
 
 	// UI Components
-	toolbar *components.Toolbar
+	toolbar   *components.Toolbar
+	statusbar *components.Statusbar
 
 	// AutoStart state
 	autoStartEnabled bool
@@ -106,7 +106,7 @@ type Machine128 struct {
 }
 
 // NewMachine creates and initializes a new Spectrum 48K machine.
-func NewMachine(_cfg *config.Config) *Machine48 {
+func NewMachine(cfg *config.Config) *Machine48 {
 	slog.Info("Creating Spectrum 48K Machine")
 	b := bus.NewBus48()
 	cpu := z80.NewCPU(b, b)
@@ -120,11 +120,14 @@ func NewMachine(_cfg *config.Config) *Machine48 {
 			CyclesPerFrame: CyclesPerFrame,
 		},
 	}
+	m.initBorder(cfg)
+	m.initToolbar(cfg)
+	m.initStatusbar(display.ScreenWidth)
 	return m
 }
 
 // NewMachine128 creates and initializes a new Spectrum 128K machine.
-func NewMachine128(_cfg *config.Config) *Machine128 {
+func NewMachine128(cfg *config.Config) *Machine128 {
 	slog.Info("Creating Spectrum 128K Machine")
 	b := bus.NewBus128()
 	cpu := z80.NewCPU(b, b)
@@ -138,6 +141,9 @@ func NewMachine128(_cfg *config.Config) *Machine128 {
 			CyclesPerFrame: CyclesPerFrame128,
 		},
 	}
+	m.initBorder(cfg)
+	m.initToolbar(cfg)
+	m.initStatusbar(display.ScreenWidth)
 	return m
 }
 
@@ -209,6 +215,14 @@ func (m *BaseMachine) initToolbar(cfg *config.Config) {
 	}
 
 	m.toolbar = tb
+}
+
+// initStatusbar initializes the statusbar component with default configuration.
+func (m *BaseMachine) initStatusbar(screenWidth int) {
+	slog.Info("Initializing statusbar")
+	m.statusbar = components.NewStatusbar(screenWidth + 2*m.borderWidth)
+	m.statusbar.SetMachineName(m.MachineName)
+	m.statusbar.SetCPUName("Z80")
 }
 
 // Shutdown performs a clean shutdown of machine resources (audio, players, ...).
@@ -492,9 +506,6 @@ func (m *BaseMachine) Run(cfg *config.Config) error {
 	m.initAudio()
 	slog.Info("Setting Ebitengine UI")
 
-	m.initBorder(cfg)
-	m.initToolbar(cfg)
-
 	th := 0
 	if m.toolbar != nil {
 		th = m.toolbar.Height()
@@ -542,52 +553,15 @@ func (m *BaseMachine) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(m.borderWidth), float64(th+m.borderWidth))
 	screen.DrawImage(m.screenImage, op)
 
-	// Draw Status Line Background (Dark grey)
-	statusWidth := display.ScreenWidth + 2*m.borderWidth
-	statusRect := ebiten.NewImage(statusWidth, StatusLineHeight)
-	statusRect.Fill(color.RGBA{32, 32, 32, 255})
-	opRect := &ebiten.DrawImageOptions{}
+	// Draw Status Line
 	yPos := th + 2*m.borderWidth + display.ScreenHeight
-	opRect.GeoM.Translate(0, float64(yPos))
-	screen.DrawImage(statusRect, opRect)
-
-	// Draw Status Line Sections
-	t := m.Bus.GetTape()
-	tapeName := "No tape"
-	if t.Filename != "" {
-		tapeName = filepath.Base(t.Filename)
+	if m.statusbar != nil {
+		// Update statusbar content
+		t := m.Bus.GetTape()
+		m.statusbar.SetTapeName(t.Filename)
+		// Draw the statusbar
+		m.statusbar.Draw(screen, yPos)
 	}
-
-	// Colors
-	textColor := color.RGBA{200, 200, 200, 255}
-	sepColor := color.RGBA{100, 100, 100, 255}
-
-	// Proportional sizing based on statusWidth
-	sep1X := statusWidth / 2
-	sep2X := statusWidth * 65 / 100
-
-	// 1. Tape Section
-	maxTapeChars := (sep1X - 10) / 6
-	if maxTapeChars < 5 {
-		maxTapeChars = 5
-	}
-	displayTapeName := tapeName
-	if len(displayTapeName) > maxTapeChars {
-		displayTapeName = displayTapeName[:maxTapeChars-3] + "..."
-	}
-	gui.DrawSmallText(screen, displayTapeName, 6, yPos+2, textColor)
-
-	// Separator 1 (between Pane 1 and Pane 2)
-	gui.DrawSmallText(screen, "|", sep1X, yPos+2, sepColor)
-
-	// 2. CPU Section
-	gui.DrawSmallText(screen, "Z80", sep1X+10, yPos+2, textColor)
-
-	// Separator 2 (between Pane 2 and Pane 3)
-	gui.DrawSmallText(screen, "|", sep2X, yPos+2, sepColor)
-
-	// 3. Machine Section
-	gui.DrawSmallText(screen, m.MachineName, sep2X+6, yPos+2, textColor)
 
 	// Draw toolbar on top
 	if m.toolbar != nil {
