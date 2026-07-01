@@ -75,6 +75,49 @@ var configScenarios = []dsl.Scenario{
 		assert.Equal(t, "Toolbar Height", cfg.Display.Toolbar.Height, 15)
 	}),
 
+	dsl.NewScenario("Normalize logging level casing", func(t *testing.T) {
+		tempDir := t.TempDir()
+		configPath := filepath.Join(tempDir, "config.json")
+
+		data := []byte(`{
+  "logging": {
+    "enabled": true,
+    "level": "wArN"
+  }
+}`)
+
+		err := os.WriteFile(configPath, data, 0644)
+		assert.Equal(t, "WriteFile error should be nil", err, nil)
+
+		cfg, err := Load(configPath)
+		assert.Equal(t, "Load error should be nil", err, nil)
+		assert.Equal(t, "Logging Level normalized", cfg.Logging.Level, "WARN")
+	}),
+
+	dsl.NewScenario("Reject invalid logging level", func(t *testing.T) {
+		tempDir := t.TempDir()
+		configPath := filepath.Join(tempDir, "config.json")
+
+		data := []byte(`{
+  "logging": {
+    "enabled": true,
+    "level": "verbose"
+  }
+}`)
+
+		err := os.WriteFile(configPath, data, 0644)
+		assert.Equal(t, "WriteFile error should be nil", err, nil)
+
+		cfg, err := Load(configPath)
+		assert.Equal(t, "Config should be nil", cfg, (*Config)(nil))
+		assert.True(t, "Load error should be BadLoggingLevelError", err != nil)
+
+		badLoggingLevel, ok := err.(*BadLoggingLevelError)
+		assert.True(t, "Error should be BadLoggingLevelError", ok)
+		assert.Equal(t, "Bad logging level", badLoggingLevel.Level, "verbose")
+		assert.DeepEqual(t, "Accepted logging levels", badLoggingLevel.AcceptedValues, AcceptedLoggingLevels)
+	}),
+
 	dsl.NewScenario("Load default Z80 logging settings when existing file omits them", func(t *testing.T) {
 		tempDir := t.TempDir()
 		configPath := filepath.Join(tempDir, "config.json")

@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix missing `internal\config\main_test.go` for collecting assertions for `config` package.
 
 ### Changed
+- Logging level values from `config.json` are now validated against `INFO`, `DEBUG`, `WARN`, and `ERROR`, accepting any casing and normalizing to uppercase before use.
 - Refactored logging configuration in `config.json` from top-level `logging_enabled` and `log_level` keys to a nested `logging.enabled` and `logging.level` structure.
 - Refactored Spectrum machine rendering to use the shared statusbar component instead of inline status line drawing logic.
 - Some refactor around border and toolbar initialisation.

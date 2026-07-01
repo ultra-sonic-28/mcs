@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -39,6 +40,11 @@ func main() {
 	// --- 2. Load Configuration ---
 	cfg, err := config.Load("config.json")
 	if err != nil {
+		var badLoggingLevel *config.BadLoggingLevelError
+		if errors.As(err, &badLoggingLevel) {
+			fmt.Fprintf(os.Stderr, "⚠️ bad logging level: %v\n", badLoggingLevel.AcceptedValues)
+			os.Exit(1)
+		}
 		fmt.Fprintf(os.Stderr, "⚠️ failed to load config: %v\n", err)
 		os.Exit(1)
 	}

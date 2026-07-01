@@ -3,8 +3,23 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"strings"
 )
+
+// AcceptedLoggingLevels lists the logging levels accepted in config.json.
+var AcceptedLoggingLevels = []string{"INFO", "DEBUG", "WARN", "ERROR"}
+
+// BadLoggingLevelError reports an unsupported logging level from config.json.
+type BadLoggingLevelError struct {
+	Level          string
+	AcceptedValues []string
+}
+
+func (e *BadLoggingLevelError) Error() string {
+	return fmt.Sprintf("bad logging level %q; accepted values: %v", e.Level, e.AcceptedValues)
+}
 
 // BorderConfig holds configuration for the CRT-like display border.
 type BorderConfig struct {
@@ -104,5 +119,23 @@ func Load(filePath string) (*Config, error) {
 		return defaultCfg, nil
 	}
 
+	level := strings.ToUpper(cfg.Logging.Level)
+	if !isAcceptedLoggingLevel(level) {
+		return nil, &BadLoggingLevelError{
+			Level:          cfg.Logging.Level,
+			AcceptedValues: AcceptedLoggingLevels,
+		}
+	}
+	cfg.Logging.Level = level
+
 	return &cfg, nil
+}
+
+func isAcceptedLoggingLevel(level string) bool {
+	for _, acceptedLevel := range AcceptedLoggingLevels {
+		if level == acceptedLevel {
+			return true
+		}
+	}
+	return false
 }
