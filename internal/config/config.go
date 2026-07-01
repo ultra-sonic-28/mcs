@@ -11,6 +11,9 @@ import (
 // AcceptedLoggingLevels lists the logging levels accepted in config.json.
 var AcceptedLoggingLevels = []string{"INFO", "DEBUG", "WARN", "ERROR"}
 
+// AcceptedScaleValues lists the display scale values accepted in config.json.
+var AcceptedScaleValues = []int{1, 2, 3, 4}
+
 // BadLoggingLevelError reports an unsupported logging level from config.json.
 type BadLoggingLevelError struct {
 	Level          string
@@ -19,6 +22,16 @@ type BadLoggingLevelError struct {
 
 func (e *BadLoggingLevelError) Error() string {
 	return fmt.Sprintf("bad logging level %q; accepted values: %v", e.Level, e.AcceptedValues)
+}
+
+// BadScaleError reports an unsupported display scale from config.json.
+type BadScaleError struct {
+	Scale          int
+	AcceptedValues []int
+}
+
+func (e *BadScaleError) Error() string {
+	return fmt.Sprintf("bad scale %d; accepted values: %v", e.Scale, e.AcceptedValues)
 }
 
 // BorderConfig holds configuration for the CRT-like display border.
@@ -97,8 +110,8 @@ func Load(filePath string) (*Config, error) {
 		},
 	}
 
-	// Try to open the file
-	file, err := os.Open(filePath)
+	// Try to read the file
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// File doesn't exist, create it with defaults
@@ -108,15 +121,26 @@ func Load(filePath string) (*Config, error) {
 			}
 			return defaultCfg, nil
 		}
-		// Other opening error, return defaults
+		// Other reading error, return defaults
 		return defaultCfg, nil
 	}
-	defer file.Close()
 
 	cfg := *defaultCfg
-	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
+	if err := json.Unmarshal(data, &cfg); err != nil {
 		// Decoding error, return defaults
 		return defaultCfg, nil
+	}
+
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err == nil {
+		if displayRaw, ok := raw["display"]; ok {
+			var displayMap map[string]json.RawMessage
+			if err := json.Unmarshal(displayRaw, &displayMap); err == nil {
+				if _, hasScale := displayMap["scale"]; !hasScale {
+					cfg.Display.Scale = defaultCfg.Display.Scale
+				}
+			}
+		}
 	}
 
 	level := strings.ToUpper(cfg.Logging.Level)
@@ -128,12 +152,28 @@ func Load(filePath string) (*Config, error) {
 	}
 	cfg.Logging.Level = level
 
+	if !isAcceptedScale(cfg.Display.Scale) {
+		return nil, &BadScaleError{
+			Scale:          cfg.Display.Scale,
+			AcceptedValues: AcceptedScaleValues,
+		}
+	}
+
 	return &cfg, nil
 }
 
 func isAcceptedLoggingLevel(level string) bool {
 	for _, acceptedLevel := range AcceptedLoggingLevels {
 		if level == acceptedLevel {
+			return true
+		}
+	}
+	return false
+}
+
+func isAcceptedScale(scale int) bool {
+	for _, acceptedScale := range AcceptedScaleValues {
+		if scale == acceptedScale {
 			return true
 		}
 	}

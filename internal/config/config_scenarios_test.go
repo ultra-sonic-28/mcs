@@ -46,6 +46,7 @@ var configScenarios = []dsl.Scenario{
 				},
 			},
 			Display: DisplayConfig{
+				Scale: 2,
 				Border: BorderConfig{
 					Color: "#FF0000",
 					Width: 30,
@@ -73,6 +74,49 @@ var configScenarios = []dsl.Scenario{
 		assert.Equal(t, "Border Width", cfg.Display.Border.Width, 30)
 		assert.Equal(t, "Toolbar Color", cfg.Display.Toolbar.Color, "#00FF00")
 		assert.Equal(t, "Toolbar Height", cfg.Display.Toolbar.Height, 15)
+	}),
+
+	dsl.NewScenario("Load configured display scale", func(t *testing.T) {
+		tempDir := t.TempDir()
+		configPath := filepath.Join(tempDir, "config.json")
+
+		data := []byte(`{
+  "display": {
+    "scale": 3
+  }
+}`)
+
+		err := os.WriteFile(configPath, data, 0644)
+		assert.Equal(t, "WriteFile error should be nil", err, nil)
+
+		cfg, err := Load(configPath)
+		assert.Equal(t, "Load error should be nil", err, nil)
+		assert.Equal(t, "Display scale loaded", cfg.Display.Scale, 3)
+	}),
+
+	dsl.NewScenario("Preserve default display scale when omitted", func(t *testing.T) {
+		tempDir := t.TempDir()
+		configPath := filepath.Join(tempDir, "config.json")
+
+		data := []byte(`{
+  "display": {
+    "border": {
+      "color": "#00FF00",
+      "width": 10
+    },
+    "toolbar": {
+      "color": "#000000",
+      "height": 5
+    }
+  }
+}`)
+
+		err := os.WriteFile(configPath, data, 0644)
+		assert.Equal(t, "WriteFile error should be nil", err, nil)
+
+		cfg, err := Load(configPath)
+		assert.Equal(t, "Load error should be nil", err, nil)
+		assert.Equal(t, "Display scale default preserved", cfg.Display.Scale, 2)
 	}),
 
 	dsl.NewScenario("Normalize logging level casing", func(t *testing.T) {
@@ -116,6 +160,29 @@ var configScenarios = []dsl.Scenario{
 		assert.True(t, "Error should be BadLoggingLevelError", ok)
 		assert.Equal(t, "Bad logging level", badLoggingLevel.Level, "verbose")
 		assert.DeepEqual(t, "Accepted logging levels", badLoggingLevel.AcceptedValues, AcceptedLoggingLevels)
+	}),
+
+	dsl.NewScenario("Reject invalid display scale", func(t *testing.T) {
+		tempDir := t.TempDir()
+		configPath := filepath.Join(tempDir, "config.json")
+
+		data := []byte(`{
+  "display": {
+    "scale": 5
+  }
+}`)
+
+		err := os.WriteFile(configPath, data, 0644)
+		assert.Equal(t, "WriteFile error should be nil", err, nil)
+
+		cfg, err := Load(configPath)
+		assert.Equal(t, "Config should be nil", cfg, (*Config)(nil))
+		assert.True(t, "Load error should be BadScaleError", err != nil)
+
+		badScale, ok := err.(*BadScaleError)
+		assert.True(t, "Error should be BadScaleError", ok)
+		assert.Equal(t, "Bad display scale", badScale.Scale, 5)
+		assert.DeepEqual(t, "Accepted display scales", badScale.AcceptedValues, AcceptedScaleValues)
 	}),
 
 	dsl.NewScenario("Load default Z80 logging settings when existing file omits them", func(t *testing.T) {

@@ -42,7 +42,12 @@ func main() {
 	if err != nil {
 		var badLoggingLevel *config.BadLoggingLevelError
 		if errors.As(err, &badLoggingLevel) {
-			fmt.Fprintf(os.Stderr, "⚠️ bad logging level: %v\n", badLoggingLevel.AcceptedValues)
+			fmt.Fprintf(os.Stderr, "⚠️ %v\n", badLoggingLevel)
+			os.Exit(1)
+		}
+		var badScale *config.BadScaleError
+		if errors.As(err, &badScale) {
+			fmt.Fprintf(os.Stderr, "⚠️ %v\n", badScale)
 			os.Exit(1)
 		}
 		fmt.Fprintf(os.Stderr, "⚠️ failed to load config: %v\n", err)
