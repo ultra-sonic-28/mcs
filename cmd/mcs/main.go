@@ -32,7 +32,7 @@ func main() {
 	flag.Parse()
 
 	if *machineType == "z80" && *programPath == "" {
-		fmt.Println("Usage: mcs --machine z80 --program <file>[.out]")
+		fmt.Println("Usage: mcs --machine z80 --program <file>[.out] --tape <file>.[tap]")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
