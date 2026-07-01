@@ -425,13 +425,22 @@ func (m *BaseMachine) instantLoadBlock() {
 	destAddr := m.CPU.Regs.IX
 	expectedLen := m.CPU.Regs.DE()
 
-	// If the ROM is looking for a header (A=0), but we are at a data block, we skip.
-	// Actually, standard LOAD routine expects blocks in order.
+	// If the ROM is looking for a header (A=0), but we are at a data block, or vice versa.
+	// This typically happens when:
+	// - A custom loader reads the EAR port directly instead of using ROM routines
+	// - The ROM routines finish loading and the BASIC program invokes a custom loader
+	// In this case, we start the tape playback and let the hardware handle it.
 	if block[0] != expectedFlag {
-		slog.Warn("Instant load flag mismatch, skipping block",
+		slog.Debug("Instant load: flag mismatch, starting tape playback from current block",
 			"block", t.CurrentBlock+1,
 			"block_flag", fmt.Sprintf("0x%02X", block[0]),
 			"expected_flag", fmt.Sprintf("0x%02X", expectedFlag))
+		// Start tape playback so the hardware (ROM LD-BYTES or custom loader)
+		// can read the EAR signal from the ULA port.
+		t.PlayFrom(t.CurrentBlock)
+		// Don't modify PC - let the CPU execute the ROM's LD-BYTES routine naturally.
+		// The ROM will read the EAR signal via the ULA port, which now reflects
+		// the actual tape data.
 		return
 	}
 
@@ -455,25 +464,40 @@ func (m *BaseMachine) instantLoadBlock() {
 	// Update Registers as if LD-BYTES finished successfully
 	m.CPU.Regs.IX += dataLen
 	m.CPU.Regs.SetDE(0)
-	m.CPU.Regs.SetBC(0x0001)           // Not strictly necessary but common
+	m.CPU.Regs.SetBC(0x0001)
 	m.CPU.Regs.L = block[len(block)-1] // Checksum
 	m.CPU.Regs.H = m.CPU.Regs.L
+	m.CPU.Regs.A = block[len(block)-1]  // A = checksum (last byte read)
 	m.CPU.Regs.SetFlag(z80.FlagC, true) // Success
 	m.CPU.Regs.SetFlag(z80.FlagZ, true)
 
 	// Perform a RET (return to caller)
 	retAddr := m.Bus.Read16(m.CPU.Regs.SP)
+	nextBlock := t.CurrentBlock + 1
+	remaining := len(t.Blocks) - nextBlock
+
 	slog.Debug("Instant load complete, returning to ROM",
 		"addr", fmt.Sprintf("0x%04X", retAddr),
 		"sp", fmt.Sprintf("0x%04X", m.CPU.Regs.SP),
-		"next_block", t.CurrentBlock+1,
+		"next_block", nextBlock,
 		"total_blocks", len(t.Blocks))
 
 	m.CPU.Regs.SP += 2
 	m.CPU.Regs.PC = retAddr
 
 	// Advance to next block
-	t.CurrentBlock++
+	t.CurrentBlock = nextBlock
+
+	// If there are still blocks remaining after this one, the next block might
+	// need to be loaded by a custom loader (reading EAR directly from ULA port)
+	// or by subsequent ROM calls. Start tape playback to ensure the EAR signal
+	// is active for any hardware-based loading.
+	if remaining > 0 {
+		slog.Debug("Starting tape playback for remaining blocks",
+			"start_block", nextBlock+1, "remaining", remaining)
+		t.PlayFrom(nextBlock)
+	}
+
 	if t.CurrentBlock >= len(t.Blocks) {
 		t.Active = false
 		slog.Info("Tape loading finished (Instant)")

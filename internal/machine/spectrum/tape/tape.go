@@ -114,14 +114,24 @@ func (t *Tape) getBlockDetail(block []byte) string {
 	return "unknown"
 }
 
-// Play starts the tape playback.
+// Play starts the tape playback from the beginning.
 func (t *Tape) Play() {
+	t.PlayFrom(0)
+}
+
+// PlayFrom starts the tape playback from the specified block index.
+func (t *Tape) PlayFrom(blockIdx int) {
 	if len(t.Blocks) == 0 {
 		return
 	}
+	if blockIdx < 0 || blockIdx >= len(t.Blocks) {
+		slog.Warn("Tape PlayFrom: block index out of range", "index", blockIdx, "total", len(t.Blocks))
+		return
+	}
 	t.Active = true
-	t.CurrentBlock = 0
+	t.CurrentBlock = blockIdx
 	t.startBlock()
+	slog.Debug("Tape playback started", "block", blockIdx+1, "total_blocks", len(t.Blocks))
 }
 
 // Stop stops the tape playback.

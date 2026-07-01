@@ -82,9 +82,9 @@ func (c *CPU) FetchWord() uint16 {
 
 // SetHalt changes the halted state of the CPU.
 func (c *CPU) SetHalt(halted bool) {
-	if c.Halted != halted {
-		slog.Debug("CPU halt state changed", "halted", halted)
-	}
+	//if c.Halted != halted {
+	//	slog.Debug("CPU halt state changed", "halted", halted)
+	//}
 	c.Halted = halted
 }
 

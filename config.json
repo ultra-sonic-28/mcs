@@ -1,9 +1,9 @@
 {
   "logging": {
     "enabled": true,
-    "level": "INFO",
+    "level": "debug",
     "z80": {
-      "instructions": true,
+      "instructions": false,
       "tape": true
     }
   },

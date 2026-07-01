@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.
 - Fixed machine layout-related initialisation so border, toolbar, and statusbar state is available immediately when Spectrum machines are constructed.
 - Fixed missing `internal\config\main_test.go` for collecting assertions for `config` package.
+- Fixed tape playback never being started, causing games with custom loaders (e.g. HADESNEB) to hang indefinitely. Added `PlayFrom(blockIdx)` method to start tape playback from a specific block index.
+- Fixed instant load mechanism not starting tape playback for remaining blocks after instant loading, ensuring custom loaders reading the EAR bit from the ULA port get proper tape signals.
+- Fixed `instantLoadBlock` not setting the A register to the checksum value after loading, matching the real ROM's LD-BYTES routine behavior.
+- Fixed flag mismatch in instant load not falling back to hardware tape playback, allowing custom loaders to read data directly from the EAR port.
 
 ### Changed
 - Logging level values from `config.json` are now validated against `INFO`, `DEBUG`, `WARN`, and `ERROR`, accepting any casing and normalizing to uppercase before use.
