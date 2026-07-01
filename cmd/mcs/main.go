@@ -114,7 +114,9 @@ func runSpectrum(machineType string, tapePath string, cfg *config.Config) {
 	slog.Info("CPU initialization complete", "instructions_loaded", z80.CountInstructions())
 
 	if tapePath != "" {
-		if err := bus.GetTape().LoadTAP(tapePath); err != nil {
+		tape := bus.GetTape()
+		tape.LogLoadingInfo = cfg.Logging.Enabled && cfg.Logging.Z80.Tape
+		if err := tape.LoadTAP(tapePath); err != nil {
 			slog.Error("⚠️ failed to load tape", "error", err)
 			os.Exit(1)
 		}

@@ -3,7 +3,8 @@
     "enabled": true,
     "level": "INFO",
     "z80": {
-      "instructions": true
+      "instructions": true,
+      "tape": true
     }
   },
   "display": {

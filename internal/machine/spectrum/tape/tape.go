@@ -22,8 +22,9 @@ const (
 
 // Tape handles the loading and playback of .tap cassette files.
 type Tape struct {
-	Filename string
-	Blocks   [][]byte
+	Filename       string
+	Blocks         [][]byte
+	LogLoadingInfo bool
 
 	// Playback state
 	Active        bool
@@ -39,7 +40,7 @@ type Tape struct {
 
 // NewTape creates a new empty Tape instance.
 func NewTape() *Tape {
-	return &Tape{}
+	return &Tape{LogLoadingInfo: true}
 }
 
 // LoadTAP reads a .tap file and extracts its blocks.
@@ -67,10 +68,12 @@ func (t *Tape) LoadTAP(filename string) error {
 		i += int(length)
 	}
 
-	slog.Info("Loaded .tap file", "file", filename, "blocks_count", len(t.Blocks))
-	for i, block := range t.Blocks {
-		detail := t.getBlockDetail(block)
-		slog.Debug("Tape block info", "block", i+1, "detail", detail, "length", len(block))
+	if t.LogLoadingInfo {
+		slog.Info("Loaded .tap file", "file", filename, "blocks_count", len(t.Blocks))
+		for i, block := range t.Blocks {
+			detail := t.getBlockDetail(block)
+			slog.Debug("Tape block info", "block", i+1, "detail", detail, "length", len(block))
+		}
 	}
 	return nil
 }

@@ -46,6 +46,8 @@ type LoggingConfig struct {
 type Z80LoggingConfig struct {
 	// Instructions controls whether all registered Z80 instructions are logged at startup.
 	Instructions bool `json:"instructions"`
+	// Tape controls whether tape loading information is logged.
+	Tape bool `json:"tape"`
 }
 
 // Config represents the application configuration.
@@ -64,6 +66,7 @@ func Load(filePath string) (*Config, error) {
 			Level:   "INFO",
 			Z80: Z80LoggingConfig{
 				Instructions: true,
+				Tape:         true,
 			},
 		},
 		Display: DisplayConfig{
