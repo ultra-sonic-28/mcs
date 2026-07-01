@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added scale configuration in the display section of `config.json`. Added loading logic and default values.
 - Extracted the machine status line into a reusable `Statusbar` component with configurable colors, section text, and tape-name truncation.
 - Added DSL-based unit tests for the statusbar component covering initialization, styling, section setters, convenience methods, and truncation behavior.
+- Added `logging.z80.instructions` configuration to control whether registered Z80 instructions are logged at startup.
 
 ### Fixed
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.

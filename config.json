@@ -1,7 +1,10 @@
 {
   "logging": {
     "enabled": true,
-    "level": "INFO"
+    "level": "INFO",
+    "z80": {
+      "instructions": true
+    }
   },
   "display": {
     "scale": 2,

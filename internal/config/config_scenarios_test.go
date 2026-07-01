@@ -20,6 +20,7 @@ var configScenarios = []dsl.Scenario{
 		assert.Equal(t, "Load error should be nil", err, nil)
 		assert.Equal(t, "Logging Enabled default", cfg.Logging.Enabled, false)
 		assert.Equal(t, "Logging Level default", cfg.Logging.Level, "INFO")
+		assert.Equal(t, "Z80 instructions logging default", cfg.Logging.Z80.Instructions, true)
 		assert.Equal(t, "Border Color default", cfg.Display.Border.Color, "#D6EFC9")
 		assert.Equal(t, "Border Width default", cfg.Display.Border.Width, 15)
 		assert.Equal(t, "Toolbar Color default", cfg.Display.Toolbar.Color, "#D6CDC9")
@@ -38,6 +39,9 @@ var configScenarios = []dsl.Scenario{
 			Logging: LoggingConfig{
 				Enabled: true,
 				Level:   "DEBUG",
+				Z80: Z80LoggingConfig{
+					Instructions: false,
+				},
 			},
 			Display: DisplayConfig{
 				Border: BorderConfig{
@@ -61,9 +65,29 @@ var configScenarios = []dsl.Scenario{
 		assert.Equal(t, "Load error should be nil", err, nil)
 		assert.Equal(t, "Logging Enabled", cfg.Logging.Enabled, true)
 		assert.Equal(t, "Logging Level", cfg.Logging.Level, "DEBUG")
+		assert.Equal(t, "Z80 instructions logging", cfg.Logging.Z80.Instructions, false)
 		assert.Equal(t, "Border Color", cfg.Display.Border.Color, "#FF0000")
 		assert.Equal(t, "Border Width", cfg.Display.Border.Width, 30)
 		assert.Equal(t, "Toolbar Color", cfg.Display.Toolbar.Color, "#00FF00")
 		assert.Equal(t, "Toolbar Height", cfg.Display.Toolbar.Height, 15)
+	}),
+
+	dsl.NewScenario("Load default Z80 logging settings when existing file omits them", func(t *testing.T) {
+		tempDir := t.TempDir()
+		configPath := filepath.Join(tempDir, "config.json")
+
+		data := []byte(`{
+  "logging": {
+    "enabled": true,
+    "level": "INFO"
+  }
+}`)
+
+		err := os.WriteFile(configPath, data, 0644)
+		assert.Equal(t, "WriteFile error should be nil", err, nil)
+
+		cfg, err := Load(configPath)
+		assert.Equal(t, "Load error should be nil", err, nil)
+		assert.Equal(t, "Z80 instructions logging default", cfg.Logging.Z80.Instructions, true)
 	}),
 }

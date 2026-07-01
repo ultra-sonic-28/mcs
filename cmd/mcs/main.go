@@ -62,8 +62,7 @@ func main() {
 	sharedBus := bus.NewSimpleBus()
 	cpu := z80.NewCPU(sharedBus, sharedBus)
 
-	// Report loaded instructions
-	z80.LogAllInstructions()
+	logZ80Instructions(cfg)
 	slog.Info("CPU initialization complete", "instructions_loaded", z80.CountInstructions())
 
 	// Display Initial State
@@ -111,8 +110,7 @@ func runSpectrum(machineType string, tapePath string, cfg *config.Config) {
 		autoStarter = m48
 	}
 
-	// Report loaded instructions
-	z80.LogAllInstructions()
+	logZ80Instructions(cfg)
 	slog.Info("CPU initialization complete", "instructions_loaded", z80.CountInstructions())
 
 	if tapePath != "" {
@@ -132,6 +130,12 @@ func runSpectrum(machineType string, tapePath string, cfg *config.Config) {
 			slog.Error("⚠️ machine error", "error", err)
 			os.Exit(1)
 		}
+	}
+}
+
+func logZ80Instructions(cfg *config.Config) {
+	if cfg.Logging.Enabled && cfg.Logging.Z80.Instructions {
+		z80.LogAllInstructions()
 	}
 }
 

@@ -38,6 +38,14 @@ type LoggingConfig struct {
 	Enabled bool `json:"enabled"`
 	// Level is the configured logging level (DEBUG, INFO, WARN, ERROR).
 	Level string `json:"level"`
+	// Z80 defines logging settings for the Z80 CPU.
+	Z80 Z80LoggingConfig `json:"z80"`
+}
+
+// Z80LoggingConfig holds Z80-specific logging configuration.
+type Z80LoggingConfig struct {
+	// Instructions controls whether all registered Z80 instructions are logged at startup.
+	Instructions bool `json:"instructions"`
 }
 
 // Config represents the application configuration.
@@ -54,6 +62,9 @@ func Load(filePath string) (*Config, error) {
 		Logging: LoggingConfig{
 			Enabled: false,
 			Level:   "INFO",
+			Z80: Z80LoggingConfig{
+				Instructions: true,
+			},
 		},
 		Display: DisplayConfig{
 			Border: BorderConfig{
@@ -84,7 +95,7 @@ func Load(filePath string) (*Config, error) {
 	}
 	defer file.Close()
 
-	var cfg Config
+	cfg := *defaultCfg
 	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
 		// Decoding error, return defaults
 		return defaultCfg, nil
