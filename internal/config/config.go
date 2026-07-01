@@ -32,11 +32,18 @@ type DisplayConfig struct {
 	Toolbar ToolbarConfig `json:"toolbar"`
 }
 
+// LoggingConfig holds configuration for application logging.
+type LoggingConfig struct {
+	// Enabled controls whether logging is written.
+	Enabled bool `json:"enabled"`
+	// Level is the configured logging level (DEBUG, INFO, WARN, ERROR).
+	Level string `json:"level"`
+}
+
 // Config represents the application configuration.
 type Config struct {
-	LoggingEnabled bool          `json:"logging_enabled"`
-	LogLevel       string        `json:"log_level"`
-	Display        DisplayConfig `json:"display"`
+	Logging LoggingConfig `json:"logging"`
+	Display DisplayConfig `json:"display"`
 }
 
 // Load reads the configuration from the specified file path.
@@ -44,8 +51,10 @@ type Config struct {
 // It always returns a valid configuration.
 func Load(filePath string) (*Config, error) {
 	defaultCfg := &Config{
-		LoggingEnabled: false,
-		LogLevel:       "INFO",
+		Logging: LoggingConfig{
+			Enabled: false,
+			Level:   "INFO",
+		},
 		Display: DisplayConfig{
 			Border: BorderConfig{
 				Color: "#D6EFC9",

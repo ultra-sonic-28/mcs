@@ -44,7 +44,7 @@ func main() {
 	}
 
 	// --- 3. Setup Logging ---
-	cleanup, err := logger.Setup("mcs.log", cfg.LoggingEnabled, cfg.LogLevel)
+	cleanup, err := logger.Setup("mcs.log", cfg.Logging.Enabled, cfg.Logging.Level)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "⚠️ failed to setup logging: %v\n", err)
 		os.Exit(1)

@@ -18,8 +18,8 @@ var configScenarios = []dsl.Scenario{
 
 		cfg, err := Load(configPath)
 		assert.Equal(t, "Load error should be nil", err, nil)
-		assert.Equal(t, "LoggingEnabled default", cfg.LoggingEnabled, false)
-		assert.Equal(t, "LogLevel default", cfg.LogLevel, "INFO")
+		assert.Equal(t, "Logging Enabled default", cfg.Logging.Enabled, false)
+		assert.Equal(t, "Logging Level default", cfg.Logging.Level, "INFO")
 		assert.Equal(t, "Border Color default", cfg.Display.Border.Color, "#D6EFC9")
 		assert.Equal(t, "Border Width default", cfg.Display.Border.Width, 15)
 		assert.Equal(t, "Toolbar Color default", cfg.Display.Toolbar.Color, "#D6CDC9")
@@ -35,8 +35,10 @@ var configScenarios = []dsl.Scenario{
 		configPath := filepath.Join(tempDir, "config.json")
 
 		expectedCfg := &Config{
-			LoggingEnabled: true,
-			LogLevel:       "DEBUG",
+			Logging: LoggingConfig{
+				Enabled: true,
+				Level:   "DEBUG",
+			},
 			Display: DisplayConfig{
 				Border: BorderConfig{
 					Color: "#FF0000",
@@ -57,8 +59,8 @@ var configScenarios = []dsl.Scenario{
 
 		cfg, err := Load(configPath)
 		assert.Equal(t, "Load error should be nil", err, nil)
-		assert.Equal(t, "LoggingEnabled", cfg.LoggingEnabled, true)
-		assert.Equal(t, "LogLevel", cfg.LogLevel, "DEBUG")
+		assert.Equal(t, "Logging Enabled", cfg.Logging.Enabled, true)
+		assert.Equal(t, "Logging Level", cfg.Logging.Level, "DEBUG")
 		assert.Equal(t, "Border Color", cfg.Display.Border.Color, "#FF0000")
 		assert.Equal(t, "Border Width", cfg.Display.Border.Width, 30)
 		assert.Equal(t, "Toolbar Color", cfg.Display.Toolbar.Color, "#00FF00")

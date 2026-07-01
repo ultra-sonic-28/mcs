@@ -1,6 +1,8 @@
 {
-  "logging_enabled": true,
-  "log_level": "INFO",
+  "logging": {
+    "enabled": true,
+    "level": "INFO"
+  },
   "display": {
     "scale": 2,
     "border": {
