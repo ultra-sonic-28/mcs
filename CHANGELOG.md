@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed black stripe rendering issue on the left and right window borders by including the toolbar height in the Ebitengine window size calculation.
 - Fixed machine layout-related initialisation so border, toolbar, and statusbar state is available immediately when Spectrum machines are constructed.
-- Fix missing `internal\config\main_test.go` for collecting assertions for `config` package.
+- Fixed missing `internal\config\main_test.go` for collecting assertions for `config` package.
 
 ### Changed
 - Logging level values from `config.json` are now validated against `INFO`, `DEBUG`, `WARN`, and `ERROR`, accepting any casing and normalizing to uppercase before use.
